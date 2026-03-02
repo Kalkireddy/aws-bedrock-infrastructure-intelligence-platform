@@ -1,0 +1,1735 @@
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+ [36m<=[0m read (data resources)[0m
+
+Terraform will perform the following actions:
+
+[1m  # aws_cloudwatch_event_rule.maintenance_window[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_event_rule" "maintenance_window" {
+      [32m+[0m[0m arn                 = (known after apply)
+      [32m+[0m[0m description         = "Trigger EC2 resize during maintenance window"
+      [32m+[0m[0m event_bus_name      = "default"
+      [32m+[0m[0m force_destroy       = false
+      [32m+[0m[0m id                  = (known after apply)
+      [32m+[0m[0m name                = "sre-automation-maintenance-window"
+      [32m+[0m[0m name_prefix         = (known after apply)
+      [32m+[0m[0m region              = "us-east-1"
+      [32m+[0m[0m schedule_expression = "cron(0 2 * * ? *)"
+      [32m+[0m[0m tags                = {
+          [32m+[0m[0m "Name" = "sre-automation-maintenance-window"
+        }
+      [32m+[0m[0m tags_all            = {
+          [32m+[0m[0m "Name" = "sre-automation-maintenance-window"
+        }
+    }
+
+[1m  # aws_cloudwatch_event_target.maintenance_window[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_event_target" "maintenance_window" {
+      [32m+[0m[0m arn            = "arn:aws:lambda:us-east-1:995429641089:function:sre-automation-resize-executor"
+      [32m+[0m[0m event_bus_name = "default"
+      [32m+[0m[0m force_destroy  = false
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m region         = "us-east-1"
+      [32m+[0m[0m rule           = "sre-automation-maintenance-window"
+      [32m+[0m[0m target_id      = "sre-automation-resize-lambda"
+    }
+
+[1m  # module.cloudwatch.aws_cloudwatch_dashboard.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_dashboard" "main" {
+      [32m+[0m[0m dashboard_arn  = (known after apply)
+      [32m+[0m[0m dashboard_body = jsonencode(
+            {
+              [32m+[0m[0m widgets = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m properties = {
+                          [32m+[0m[0m metrics = [
+                              [32m+[0m[0m [
+                                  [32m+[0m[0m "AWS/EC2",
+                                  [32m+[0m[0m "CPUUtilization",
+                                  [32m+[0m[0m {
+                                      [32m+[0m[0m stat = "Average"
+                                    },
+                                ],
+                              [32m+[0m[0m [
+                                  [32m+[0m[0m "SREAutomation",
+                                  [32m+[0m[0m "DiskSpaceUsed",
+                                  [32m+[0m[0m {
+                                      [32m+[0m[0m stat = "Average"
+                                    },
+                                ],
+                              [32m+[0m[0m [
+                                  [32m+[0m[0m "SREAutomation",
+                                  [32m+[0m[0m "ErrorCount",
+                                  [32m+[0m[0m {
+                                      [32m+[0m[0m stat = "Sum"
+                                    },
+                                ],
+                            ]
+                          [32m+[0m[0m period  = 300
+                          [32m+[0m[0m region  = "us-east-1"
+                          [32m+[0m[0m stat    = "Average"
+                          [32m+[0m[0m title   = "Key Metrics"
+                        }
+                      [32m+[0m[0m type       = "metric"
+                    },
+                ]
+            }
+        )
+      [32m+[0m[0m dashboard_name = "sre-automation-dashboard"
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m region         = "us-east-1"
+    }
+
+[1m  # module.cloudwatch.aws_cloudwatch_log_group.lambda[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "lambda" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m deletion_protection_enabled = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m log_group_class             = (known after apply)
+      [32m+[0m[0m name                        = "/aws/lambda/sre-automation"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m retention_in_days           = 7
+      [32m+[0m[0m skip_destroy                = false
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Name" = "sre-automation-lambda-logs"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Name" = "sre-automation-lambda-logs"
+        }
+    }
+
+[1m  # module.cloudwatch.aws_cloudwatch_log_group.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "main" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m deletion_protection_enabled = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m log_group_class             = (known after apply)
+      [32m+[0m[0m name                        = "/aws/sre-automation/application"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m retention_in_days           = 7
+      [32m+[0m[0m skip_destroy                = false
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Name" = "sre-automation-logs"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Name" = "sre-automation-logs"
+        }
+    }
+
+[1m  # module.cloudwatch.aws_cloudwatch_log_metric_filter.errors[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_metric_filter" "errors" {
+      [32m+[0m[0m apply_on_transformed_logs = (known after apply)
+      [32m+[0m[0m id                        = (known after apply)
+      [32m+[0m[0m log_group_name            = "/aws/sre-automation/application"
+      [32m+[0m[0m name                      = "sre-automation-error-filter"
+      [32m+[0m[0m pattern                   = "[ERROR]"
+      [32m+[0m[0m region                    = "us-east-1"
+
+      [32m+[0m[0m metric_transformation {
+          [32m+[0m[0m name      = "ErrorCount"
+          [32m+[0m[0m namespace = "SREAutomation"
+          [32m+[0m[0m unit      = "None"
+          [32m+[0m[0m value     = "1"
+        }
+    }
+
+[1m  # module.cloudwatch.aws_cloudwatch_metric_alarm.cpu_high[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_metric_alarm" "cpu_high" {
+      [32m+[0m[0m actions_enabled                       = true
+      [32m+[0m[0m alarm_actions                         = (known after apply)
+      [32m+[0m[0m alarm_description                     = "Alert when CPU utilization is high"
+      [32m+[0m[0m alarm_name                            = "sre-automation-cpu-high"
+      [32m+[0m[0m arn                                   = (known after apply)
+      [32m+[0m[0m comparison_operator                   = "GreaterThanThreshold"
+      [32m+[0m[0m evaluate_low_sample_count_percentiles = (known after apply)
+      [32m+[0m[0m evaluation_periods                    = 2
+      [32m+[0m[0m id                                    = (known after apply)
+      [32m+[0m[0m metric_name                           = "CPUUtilization"
+      [32m+[0m[0m namespace                             = "AWS/EC2"
+      [32m+[0m[0m period                                = 300
+      [32m+[0m[0m region                                = "us-east-1"
+      [32m+[0m[0m statistic                             = "Average"
+      [32m+[0m[0m tags                                  = {
+          [32m+[0m[0m "Name" = "sre-automation-cpu-high"
+        }
+      [32m+[0m[0m tags_all                              = {
+          [32m+[0m[0m "Name" = "sre-automation-cpu-high"
+        }
+      [32m+[0m[0m threshold                             = 75
+      [32m+[0m[0m treat_missing_data                    = "notBreaching"
+    }
+
+[1m  # module.cloudwatch.aws_cloudwatch_metric_alarm.disk_high[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_metric_alarm" "disk_high" {
+      [32m+[0m[0m actions_enabled                       = true
+      [32m+[0m[0m alarm_actions                         = (known after apply)
+      [32m+[0m[0m alarm_description                     = "Alert when disk utilization is high"
+      [32m+[0m[0m alarm_name                            = "sre-automation-disk-high"
+      [32m+[0m[0m arn                                   = (known after apply)
+      [32m+[0m[0m comparison_operator                   = "GreaterThanThreshold"
+      [32m+[0m[0m evaluate_low_sample_count_percentiles = (known after apply)
+      [32m+[0m[0m evaluation_periods                    = 2
+      [32m+[0m[0m id                                    = (known after apply)
+      [32m+[0m[0m metric_name                           = "DiskSpaceUsed"
+      [32m+[0m[0m namespace                             = "SREAutomation"
+      [32m+[0m[0m period                                = 300
+      [32m+[0m[0m region                                = "us-east-1"
+      [32m+[0m[0m statistic                             = "Average"
+      [32m+[0m[0m tags                                  = {
+          [32m+[0m[0m "Name" = "sre-automation-disk-high"
+        }
+      [32m+[0m[0m tags_all                              = {
+          [32m+[0m[0m "Name" = "sre-automation-disk-high"
+        }
+      [32m+[0m[0m threshold                             = 80
+      [32m+[0m[0m treat_missing_data                    = "notBreaching"
+    }
+
+[1m  # module.dynamodb.aws_dynamodb_table.approvals[0m will be created
+[0m  [32m+[0m[0m resource "aws_dynamodb_table" "approvals" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m billing_mode     = "PAY_PER_REQUEST"
+      [32m+[0m[0m hash_key         = "request_id"
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m name             = "sre-automation-approvals"
+      [32m+[0m[0m read_capacity    = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m stream_arn       = (known after apply)
+      [32m+[0m[0m stream_label     = (known after apply)
+      [32m+[0m[0m stream_view_type = (known after apply)
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "sre-automation-approvals"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "sre-automation-approvals"
+        }
+      [32m+[0m[0m write_capacity   = (known after apply)
+
+      [32m+[0m[0m attribute {
+          [32m+[0m[0m name = "request_id"
+          [32m+[0m[0m type = "S"
+        }
+
+      [32m+[0m[0m global_secondary_index (known after apply)
+
+      [32m+[0m[0m global_table_witness (known after apply)
+
+      [32m+[0m[0m point_in_time_recovery (known after apply)
+
+      [32m+[0m[0m server_side_encryption (known after apply)
+
+      [32m+[0m[0m ttl {
+          [32m+[0m[0m attribute_name = "expiration_time"
+          [32m+[0m[0m enabled        = true
+        }
+
+      [32m+[0m[0m warm_throughput (known after apply)
+    }
+
+[1m  # module.dynamodb.aws_dynamodb_table.chatbot_cache[0m will be created
+[0m  [32m+[0m[0m resource "aws_dynamodb_table" "chatbot_cache" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m billing_mode     = "PAY_PER_REQUEST"
+      [32m+[0m[0m hash_key         = "query_hash"
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m name             = "sre-automation-chatbot-cache"
+      [32m+[0m[0m read_capacity    = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m stream_arn       = (known after apply)
+      [32m+[0m[0m stream_label     = (known after apply)
+      [32m+[0m[0m stream_view_type = (known after apply)
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "sre-automation-chatbot-cache"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "sre-automation-chatbot-cache"
+        }
+      [32m+[0m[0m write_capacity   = (known after apply)
+
+      [32m+[0m[0m attribute {
+          [32m+[0m[0m name = "query_hash"
+          [32m+[0m[0m type = "S"
+        }
+
+      [32m+[0m[0m global_secondary_index (known after apply)
+
+      [32m+[0m[0m global_table_witness (known after apply)
+
+      [32m+[0m[0m point_in_time_recovery (known after apply)
+
+      [32m+[0m[0m server_side_encryption (known after apply)
+
+      [32m+[0m[0m ttl {
+          [32m+[0m[0m attribute_name = "expiration_time"
+          [32m+[0m[0m enabled        = true
+        }
+
+      [32m+[0m[0m warm_throughput (known after apply)
+    }
+
+[1m  # module.dynamodb.aws_dynamodb_table.resize_requests[0m will be created
+[0m  [32m+[0m[0m resource "aws_dynamodb_table" "resize_requests" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m billing_mode     = "PAY_PER_REQUEST"
+      [32m+[0m[0m hash_key         = "instance_id"
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m name             = "sre-automation-resize-requests"
+      [32m+[0m[0m range_key        = "timestamp"
+      [32m+[0m[0m read_capacity    = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m stream_arn       = (known after apply)
+      [32m+[0m[0m stream_label     = (known after apply)
+      [32m+[0m[0m stream_view_type = (known after apply)
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "sre-automation-resize-requests"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "sre-automation-resize-requests"
+        }
+      [32m+[0m[0m write_capacity   = (known after apply)
+
+      [32m+[0m[0m attribute {
+          [32m+[0m[0m name = "instance_id"
+          [32m+[0m[0m type = "S"
+        }
+      [32m+[0m[0m attribute {
+          [32m+[0m[0m name = "timestamp"
+          [32m+[0m[0m type = "N"
+        }
+
+      [32m+[0m[0m global_secondary_index (known after apply)
+
+      [32m+[0m[0m global_table_witness (known after apply)
+
+      [32m+[0m[0m point_in_time_recovery {
+          [32m+[0m[0m enabled                 = true
+          [32m+[0m[0m recovery_period_in_days = (known after apply)
+        }
+
+      [32m+[0m[0m server_side_encryption {
+          [32m+[0m[0m enabled     = true
+          [32m+[0m[0m kms_key_arn = (known after apply)
+        }
+
+      [32m+[0m[0m ttl {
+          [32m+[0m[0m attribute_name = "expiration_time"
+          [32m+[0m[0m enabled        = true
+        }
+
+      [32m+[0m[0m warm_throughput (known after apply)
+    }
+
+[1m  # module.ec2.data.aws_ami.amazon_linux_2[0m will be read during apply
+  # (depends on a resource or a module with changes pending)
+[0m [36m<=[0m[0m data "aws_ami" "amazon_linux_2" {
+      [32m+[0m[0m architecture          = (known after apply)
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m block_device_mappings = (known after apply)
+      [32m+[0m[0m boot_mode             = (known after apply)
+      [32m+[0m[0m creation_date         = (known after apply)
+      [32m+[0m[0m deprecation_time      = (known after apply)
+      [32m+[0m[0m description           = (known after apply)
+      [32m+[0m[0m ena_support           = (known after apply)
+      [32m+[0m[0m hypervisor            = (known after apply)
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m image_id              = (known after apply)
+      [32m+[0m[0m image_location        = (known after apply)
+      [32m+[0m[0m image_owner_alias     = (known after apply)
+      [32m+[0m[0m image_type            = (known after apply)
+      [32m+[0m[0m imds_support          = (known after apply)
+      [32m+[0m[0m kernel_id             = (known after apply)
+      [32m+[0m[0m last_launched_time    = (known after apply)
+      [32m+[0m[0m most_recent           = true
+      [32m+[0m[0m name                  = (known after apply)
+      [32m+[0m[0m owner_id              = (known after apply)
+      [32m+[0m[0m owners                = [
+          [32m+[0m[0m "amazon",
+        ]
+      [32m+[0m[0m platform              = (known after apply)
+      [32m+[0m[0m platform_details      = (known after apply)
+      [32m+[0m[0m product_codes         = (known after apply)
+      [32m+[0m[0m public                = (known after apply)
+      [32m+[0m[0m ramdisk_id            = (known after apply)
+      [32m+[0m[0m region                = (known after apply)
+      [32m+[0m[0m root_device_name      = (known after apply)
+      [32m+[0m[0m root_device_type      = (known after apply)
+      [32m+[0m[0m root_snapshot_id      = (known after apply)
+      [32m+[0m[0m sriov_net_support     = (known after apply)
+      [32m+[0m[0m state                 = (known after apply)
+      [32m+[0m[0m state_reason          = (known after apply)
+      [32m+[0m[0m tags                  = (known after apply)
+      [32m+[0m[0m tpm_support           = (known after apply)
+      [32m+[0m[0m usage_operation       = (known after apply)
+      [32m+[0m[0m virtualization_type   = (known after apply)
+
+      [32m+[0m[0m filter {
+          [32m+[0m[0m name   = "name"
+          [32m+[0m[0m values = [
+              [32m+[0m[0m "amzn2-ami-hvm-*-x86_64-gp2",
+            ]
+        }
+      [32m+[0m[0m filter {
+          [32m+[0m[0m name   = "state"
+          [32m+[0m[0m values = [
+              [32m+[0m[0m "available",
+            ]
+        }
+    }
+
+[1m  # module.ec2.aws_cloudwatch_log_group.ec2[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "ec2" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m deletion_protection_enabled = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m log_group_class             = (known after apply)
+      [32m+[0m[0m name                        = "/aws/ec2/sre-automation"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m retention_in_days           = 14
+      [32m+[0m[0m skip_destroy                = false
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Name" = "sre-automation-ec2-logs"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Name" = "sre-automation-ec2-logs"
+        }
+    }
+
+[1m  # module.ec2.aws_cloudwatch_metric_alarm.cpu_utilization[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_metric_alarm" "cpu_utilization" {
+      [32m+[0m[0m actions_enabled                       = true
+      [32m+[0m[0m alarm_description                     = "Alert when CPU exceeds 75%"
+      [32m+[0m[0m alarm_name                            = "sre-automation-cpu-high"
+      [32m+[0m[0m arn                                   = (known after apply)
+      [32m+[0m[0m comparison_operator                   = "GreaterThanThreshold"
+      [32m+[0m[0m dimensions                            = (known after apply)
+      [32m+[0m[0m evaluate_low_sample_count_percentiles = (known after apply)
+      [32m+[0m[0m evaluation_periods                    = 2
+      [32m+[0m[0m id                                    = (known after apply)
+      [32m+[0m[0m metric_name                           = "CPUUtilization"
+      [32m+[0m[0m namespace                             = "AWS/EC2"
+      [32m+[0m[0m period                                = 300
+      [32m+[0m[0m region                                = "us-east-1"
+      [32m+[0m[0m statistic                             = "Average"
+      [32m+[0m[0m tags_all                              = (known after apply)
+      [32m+[0m[0m threshold                             = 75
+      [32m+[0m[0m treat_missing_data                    = "missing"
+    }
+
+[1m  # module.ec2.aws_cloudwatch_metric_alarm.disk_utilization[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_metric_alarm" "disk_utilization" {
+      [32m+[0m[0m actions_enabled                       = true
+      [32m+[0m[0m alarm_description                     = "Alert when disk space exceeds 80%"
+      [32m+[0m[0m alarm_name                            = "sre-automation-disk-high"
+      [32m+[0m[0m arn                                   = (known after apply)
+      [32m+[0m[0m comparison_operator                   = "GreaterThanThreshold"
+      [32m+[0m[0m dimensions                            = (known after apply)
+      [32m+[0m[0m evaluate_low_sample_count_percentiles = (known after apply)
+      [32m+[0m[0m evaluation_periods                    = 2
+      [32m+[0m[0m id                                    = (known after apply)
+      [32m+[0m[0m metric_name                           = "DiskSpaceUsed"
+      [32m+[0m[0m namespace                             = "AWS/EC2"
+      [32m+[0m[0m period                                = 300
+      [32m+[0m[0m region                                = "us-east-1"
+      [32m+[0m[0m statistic                             = "Average"
+      [32m+[0m[0m tags_all                              = (known after apply)
+      [32m+[0m[0m threshold                             = 80
+      [32m+[0m[0m treat_missing_data                    = "missing"
+    }
+
+[1m  # module.ec2.aws_instance.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_instance" "main" {
+      [32m+[0m[0m ami                                  = (known after apply)
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m associate_public_ip_address          = (known after apply)
+      [32m+[0m[0m availability_zone                    = (known after apply)
+      [32m+[0m[0m disable_api_stop                     = (known after apply)
+      [32m+[0m[0m disable_api_termination              = (known after apply)
+      [32m+[0m[0m ebs_optimized                        = true
+      [32m+[0m[0m enable_primary_ipv6                  = (known after apply)
+      [32m+[0m[0m force_destroy                        = false
+      [32m+[0m[0m get_password_data                    = false
+      [32m+[0m[0m host_id                              = (known after apply)
+      [32m+[0m[0m host_resource_group_arn              = (known after apply)
+      [32m+[0m[0m iam_instance_profile                 = (known after apply)
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_initiated_shutdown_behavior = (known after apply)
+      [32m+[0m[0m instance_lifecycle                   = (known after apply)
+      [32m+[0m[0m instance_state                       = (known after apply)
+      [32m+[0m[0m instance_type                        = "t3.micro"
+      [32m+[0m[0m ipv6_address_count                   = (known after apply)
+      [32m+[0m[0m ipv6_addresses                       = (known after apply)
+      [32m+[0m[0m key_name                             = (known after apply)
+      [32m+[0m[0m monitoring                           = true
+      [32m+[0m[0m outpost_arn                          = (known after apply)
+      [32m+[0m[0m password_data                        = (known after apply)
+      [32m+[0m[0m placement_group                      = (known after apply)
+      [32m+[0m[0m placement_group_id                   = (known after apply)
+      [32m+[0m[0m placement_partition_number           = (known after apply)
+      [32m+[0m[0m primary_network_interface_id         = (known after apply)
+      [32m+[0m[0m private_dns                          = (known after apply)
+      [32m+[0m[0m private_ip                           = (known after apply)
+      [32m+[0m[0m public_dns                           = (known after apply)
+      [32m+[0m[0m public_ip                            = (known after apply)
+      [32m+[0m[0m region                               = "us-east-1"
+      [32m+[0m[0m secondary_private_ips                = (known after apply)
+      [32m+[0m[0m security_groups                      = (known after apply)
+      [32m+[0m[0m source_dest_check                    = true
+      [32m+[0m[0m spot_instance_request_id             = (known after apply)
+      [32m+[0m[0m subnet_id                            = (known after apply)
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "sre-automation-instance"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "sre-automation-instance"
+        }
+      [32m+[0m[0m tenancy                              = (known after apply)
+      [32m+[0m[0m user_data                            = "IyEvYmluL2Jhc2gKIyBVcGRhdGUgc3lzdGVtCnl1bSB1cGRhdGUgLXkKeXVtIGluc3RhbGwgLXkgYW1hem9uLWNsb3Vkd2F0Y2gtYWdlbnQKCiMgQ29uZmlndXJlIENsb3VkV2F0Y2ggYWdlbnQKY2F0ID4gL29wdC9hd3MvYW1hem9uLWNsb3Vkd2F0Y2gtYWdlbnQvZXRjL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50Lmpzb24gPDxFT0YKewogICJtZXRyaWNzIjogewogICAgIm5hbWVzcGFjZSI6ICJTUkVBdXRvbWF0aW9uIiwKICAgICJtZXRyaWNzX2NvbGxlY3RlZCI6IHsKICAgICAgImRpc2siOiB7CiAgICAgICAgIm1lYXN1cmVtZW50IjogWwogICAgICAgICAgewogICAgICAgICAgICAibmFtZSI6ICJ1c2VkX3BlcmNlbnQiLAogICAgICAgICAgICAicmVuYW1lIjogIkRpc2tTcGFjZVVzZWQiLAogICAgICAgICAgICAidW5pdCI6ICJQZXJjZW50IgogICAgICAgICAgfQogICAgICAgIF0sCiAgICAgICAgIm1ldHJpY3NfY29sbGVjdGlvbl9pbnRlcnZhbCI6IDYwLAogICAgICAgICJyZXNvdXJjZXMiOiBbIioiXQogICAgICB9LAogICAgICAibWVtIjogewogICAgICAgICJtZWFzdXJlbWVudCI6IFsKICAgICAgICAgIHsKICAgICAgICAgICAgIm5hbWUiOiAibWVtX3VzZWRfcGVyY2VudCIsCiAgICAgICAgICAgICJyZW5hbWUiOiAiTWVtb3J5VXNlZCIsCiAgICAgICAgICAgICJ1bml0IjogIlBlcmNlbnQiCiAgICAgICAgICB9CiAgICAgICAgXSwKICAgICAgICAibWV0cmljc19jb2xsZWN0aW9uX2ludGVydmFsIjogNjAKICAgICAgfQogICAgfQogIH0sCiAgImxvZ3MiOiB7CiAgICAibG9nc19jb2xsZWN0ZWQiOiB7CiAgICAgICJmaWxlcyI6IHsKICAgICAgICAiY29sbGVjdF9saXN0IjogWwogICAgICAgICAgewogICAgICAgICAgICAiZmlsZV9wYXRoIjogIi92YXIvbG9nL21lc3NhZ2VzIiwKICAgICAgICAgICAgImxvZ19ncm91cF9uYW1lIjogIi9hd3MvZWMyL3NyZS1hdXRvbWF0aW9uIiwKICAgICAgICAgICAgImxvZ19zdHJlYW1fbmFtZSI6ICJ7aW5zdGFuY2VfaWR9L21lc3NhZ2VzIgogICAgICAgICAgfSwKICAgICAgICAgIHsKICAgICAgICAgICAgImZpbGVfcGF0aCI6ICIvdmFyL2xvZy9zZWN1cmUiLAogICAgICAgICAgICAibG9nX2dyb3VwX25hbWUiOiAiL2F3cy9lYzIvc3JlLWF1dG9tYXRpb24iLAogICAgICAgICAgICAibG9nX3N0cmVhbV9uYW1lIjogIntpbnN0YW5jZV9pZH0vc2VjdXJlIgogICAgICAgICAgfQogICAgICAgIF0KICAgICAgfQogICAgfQogIH0KfQpFT0YKCiMgU3RhcnQgQ2xvdWRXYXRjaCBhZ2VudAovb3B0L2F3cy9hbWF6b24tY2xvdWR3YXRjaC1hZ2VudC9iaW4vYW1hem9uLWNsb3Vkd2F0Y2gtYWdlbnQtY3RsIFwKICAtYSBmZXRjaC1jb25maWcgXAogIC1tIGVjMiBcCiAgLXMgXAogIC1jIGZpbGU6L29wdC9hd3MvYW1hem9uLWNsb3Vkd2F0Y2gtYWdlbnQvZXRjL2FtYXpvbi1jbG91ZHdhdGNoLWFnZW50Lmpzb24KCiMgU3RhcnQgYSBzYW1wbGUgYXBwbGljYXRpb24gdGhhdCBnZW5lcmF0ZXMgbG9ncwpjYXQgPiAvdXNyL2xvY2FsL2Jpbi9zYW1wbGUtYXBwLnB5IDw8J1BZVEhPTicKIyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwppbXBvcnQgdGltZQppbXBvcnQgcmFuZG9tCmltcG9ydCBsb2dnaW5nCmltcG9ydCBzeXMKCmxvZ2dpbmcuYmFzaWNDb25maWcobGV2ZWw9bG9nZ2luZy5JTkZPLCBmb3JtYXQ9JyUoYXNjdGltZSlzIC0gJShsZXZlbG5hbWUpcyAtICUobWVzc2FnZSlzJykKbG9nZ2VyID0gbG9nZ2luZy5nZXRMb2dnZXIoX19uYW1lX18pCgp3aGlsZSBUcnVlOgogICAgb3BlcmF0aW9uID0gcmFuZG9tLmNob2ljZShbJ3JlYWQnLCAnd3JpdGUnLCAnZGVsZXRlJywgJ3F1ZXJ5J10pCiAgICB1c2VyID0gZiJ1c2Vye3JhbmRvbS5yYW5kaW50KDEsIDEwMCl9IgogICAgZHVyYXRpb24gPSByYW5kb20ucmFuZG9tKCkgKiAxMAogICAgCiAgICBpZiByYW5kb20ucmFuZG9tKCkgPiAwLjk6CiAgICAgICAgbG9nZ2VyLmVycm9yKGYiRVJST1I6IERhdGFiYXNlIGVycm9yIGR1cmluZyB7b3BlcmF0aW9ufSBieSB7dXNlcn0iKQogICAgZWxzZToKICAgICAgICBsb2dnZXIuaW5mbyhmIlNVQ0NFU1M6IHtvcGVyYXRpb24udXBwZXIoKX0gb3BlcmF0aW9uIGJ5IHt1c2VyfSBjb21wbGV0ZWQgaW4ge2R1cmF0aW9uOi4yZn1zIikKICAgIAogICAgdGltZS5zbGVlcChyYW5kb20ucmFuZGludCgxLCA1KSkKUFlUSE9OCgpjaG1vZCAreCAvdXNyL2xvY2FsL2Jpbi9zYW1wbGUtYXBwLnB5CgojIENyZWF0ZSBzeXN0ZW1kIHNlcnZpY2UgZm9yIHNhbXBsZSBhcHAKY2F0ID4gL2V0Yy9zeXN0ZW1kL3N5c3RlbS9zYW1wbGUtYXBwLnNlcnZpY2UgPDwnU0VSVklDRScKW1VuaXRdCkRlc2NyaXB0aW9uPVNhbXBsZSBBcHBsaWNhdGlvbgpBZnRlcj1uZXR3b3JrLnRhcmdldAoKW1NlcnZpY2VdClR5cGU9c2ltcGxlClVzZXI9cm9vdApFeGVjU3RhcnQ9L3Vzci9sb2NhbC9iaW4vc2FtcGxlLWFwcC5weQpSZXN0YXJ0PWFsd2F5cwpSZXN0YXJ0U2VjPTUKCltJbnN0YWxsXQpXYW50ZWRCeT1tdWx0aS11c2VyLnRhcmdldApTRVJWSUNFCgpzeXN0ZW1jdGwgZW5hYmxlIHNhbXBsZS1hcHAKc3lzdGVtY3RsIHN0YXJ0IHNhbXBsZS1hcHAK"
+      [32m+[0m[0m user_data_base64                     = (known after apply)
+      [32m+[0m[0m user_data_replace_on_change          = false
+      [32m+[0m[0m vpc_security_group_ids               = (known after apply)
+
+      [32m+[0m[0m capacity_reservation_specification (known after apply)
+
+      [32m+[0m[0m cpu_options (known after apply)
+
+      [32m+[0m[0m ebs_block_device (known after apply)
+
+      [32m+[0m[0m enclave_options (known after apply)
+
+      [32m+[0m[0m ephemeral_block_device (known after apply)
+
+      [32m+[0m[0m instance_market_options (known after apply)
+
+      [32m+[0m[0m maintenance_options (known after apply)
+
+      [32m+[0m[0m metadata_options {
+          [32m+[0m[0m http_endpoint               = "enabled"
+          [32m+[0m[0m http_protocol_ipv6          = "disabled"
+          [32m+[0m[0m http_put_response_hop_limit = 1
+          [32m+[0m[0m http_tokens                 = "required"
+          [32m+[0m[0m instance_metadata_tags      = (known after apply)
+        }
+
+      [32m+[0m[0m network_interface (known after apply)
+
+      [32m+[0m[0m primary_network_interface (known after apply)
+
+      [32m+[0m[0m private_dns_name_options (known after apply)
+
+      [32m+[0m[0m root_block_device {
+          [32m+[0m[0m delete_on_termination = true
+          [32m+[0m[0m device_name           = (known after apply)
+          [32m+[0m[0m encrypted             = true
+          [32m+[0m[0m iops                  = (known after apply)
+          [32m+[0m[0m kms_key_id            = (known after apply)
+          [32m+[0m[0m tags_all              = (known after apply)
+          [32m+[0m[0m throughput            = (known after apply)
+          [32m+[0m[0m volume_id             = (known after apply)
+          [32m+[0m[0m volume_size           = 50
+          [32m+[0m[0m volume_type           = "gp3"
+        }
+
+      [32m+[0m[0m secondary_network_interface (known after apply)
+    }
+
+[1m  # module.ec2_security_group.aws_security_group.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_security_group" "main" {
+      [32m+[0m[0m arn                    = (known after apply)
+      [32m+[0m[0m description            = "Security group for sre-automation"
+      [32m+[0m[0m egress                 = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m description      = "All outbound traffic"
+              [32m+[0m[0m from_port        = 0
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "-1"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 0
+            },
+        ]
+      [32m+[0m[0m id                     = (known after apply)
+      [32m+[0m[0m ingress                = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m description      = "HTTP access"
+              [32m+[0m[0m from_port        = 80
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "tcp"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 80
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m description      = "HTTPS access"
+              [32m+[0m[0m from_port        = 443
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "tcp"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 443
+            },
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_blocks      = [
+                  [32m+[0m[0m "0.0.0.0/0",
+                ]
+              [32m+[0m[0m description      = "SSH access"
+              [32m+[0m[0m from_port        = 22
+              [32m+[0m[0m ipv6_cidr_blocks = []
+              [32m+[0m[0m prefix_list_ids  = []
+              [32m+[0m[0m protocol         = "tcp"
+              [32m+[0m[0m security_groups  = []
+              [32m+[0m[0m self             = false
+              [32m+[0m[0m to_port          = 22
+            },
+        ]
+      [32m+[0m[0m name                   = "sre-automation-sg"
+      [32m+[0m[0m name_prefix            = (known after apply)
+      [32m+[0m[0m owner_id               = (known after apply)
+      [32m+[0m[0m region                 = "us-east-1"
+      [32m+[0m[0m revoke_rules_on_delete = false
+      [32m+[0m[0m tags                   = {
+          [32m+[0m[0m "Name" = "sre-automation-sg"
+        }
+      [32m+[0m[0m tags_all               = {
+          [32m+[0m[0m "Name" = "sre-automation-sg"
+        }
+      [32m+[0m[0m vpc_id                 = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_instance_profile.ec2_cloudwatch[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_instance_profile" "ec2_cloudwatch" {
+      [32m+[0m[0m arn         = (known after apply)
+      [32m+[0m[0m create_date = (known after apply)
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-ec2-cloudwatch-profile"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m path        = "/"
+      [32m+[0m[0m role        = "sre-automation-ec2-cloudwatch-role"
+      [32m+[0m[0m tags_all    = (known after apply)
+      [32m+[0m[0m unique_id   = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role.ec2_automation[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "ec2_automation" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "ssm.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "sre-automation-ec2-automation-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role.ec2_cloudwatch[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "ec2_cloudwatch" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "ec2.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "sre-automation-ec2-cloudwatch-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role.lambda_execution[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "lambda_execution" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "lambda.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "sre-automation-lambda-execution-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_bedrock[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_bedrock" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-bedrock-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "bedrock:InvokeModel",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "arn:aws:bedrock:*:*:foundation-model/*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_cloudwatch[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_cloudwatch" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-cloudwatch-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "cloudwatch:GetMetricStatistics",
+                          [32m+[0m[0m "cloudwatch:GetMetricData",
+                          [32m+[0m[0m "cloudwatch:ListMetrics",
+                          [32m+[0m[0m "logs:GetLogEvents",
+                          [32m+[0m[0m "logs:DescribeLogStreams",
+                          [32m+[0m[0m "logs:DescribeLogGroups",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_dynamodb[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_dynamodb" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-dynamodb-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "dynamodb:GetItem",
+                          [32m+[0m[0m "dynamodb:PutItem",
+                          [32m+[0m[0m "dynamodb:UpdateItem",
+                          [32m+[0m[0m "dynamodb:Query",
+                          [32m+[0m[0m "dynamodb:Scan",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "arn:aws:dynamodb:*:*:table/sre-automation-*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_ec2[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_ec2" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-ec2-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "ec2:DescribeInstances",
+                          [32m+[0m[0m "ec2:ModifyInstanceAttribute",
+                          [32m+[0m[0m "ec2:DescribeInstanceTypes",
+                          [32m+[0m[0m "ec2:DescribeAvailabilityZones",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "*"
+                    },
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "ec2:CreateTags",
+                          [32m+[0m[0m "ec2:DeleteTags",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "arn:aws:ec2:*:*:instance/*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_parameter_store[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_parameter_store" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-parameter-store-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "ssm:GetParameter",
+                          [32m+[0m[0m "ssm:GetParameters",
+                          [32m+[0m[0m "ssm:PutParameter",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "arn:aws:ssm:*:*:parameter/sre/*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_s3[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_s3" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-s3-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = (known after apply)
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy.lambda_sns[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "lambda_sns" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-lambda-sns-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "sns:Publish",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.iam.aws_iam_role_policy_attachment.ec2_automation[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "ec2_automation" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
+      [32m+[0m[0m role       = "sre-automation-ec2-automation-role"
+    }
+
+[1m  # module.iam.aws_iam_role_policy_attachment.ec2_cloudwatch[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "ec2_cloudwatch" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+      [32m+[0m[0m role       = "sre-automation-ec2-cloudwatch-role"
+    }
+
+[1m  # module.iam.aws_iam_role_policy_attachment.lambda_basic[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "lambda_basic" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      [32m+[0m[0m role       = "sre-automation-lambda-execution-role"
+    }
+
+[1m  # module.iam.aws_iam_role_policy_attachment.lambda_vpc[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "lambda_vpc" {
+      [32m+[0m[0m id         = (known after apply)
+      [32m+[0m[0m policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+      [32m+[0m[0m role       = "sre-automation-lambda-execution-role"
+    }
+
+[1m  # module.lambda_ai_chatbot.aws_cloudwatch_log_group.lambda[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "lambda" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m deletion_protection_enabled = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m log_group_class             = (known after apply)
+      [32m+[0m[0m name                        = "/aws/lambda/sre-automation-ai-chatbot"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m retention_in_days           = 7
+      [32m+[0m[0m skip_destroy                = false
+      [32m+[0m[0m tags_all                    = (known after apply)
+    }
+
+[1m  # module.lambda_ai_chatbot.aws_lambda_function.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_function" "main" {
+      [32m+[0m[0m architectures                  = (known after apply)
+      [32m+[0m[0m arn                            = (known after apply)
+      [32m+[0m[0m code_sha256                    = (known after apply)
+      [32m+[0m[0m filename                       = "modules/lambda/sre-automation-ai-chatbot.zip"
+      [32m+[0m[0m function_name                  = "sre-automation-ai-chatbot"
+      [32m+[0m[0m handler                        = "ai_chatbot.lambda_handler"
+      [32m+[0m[0m id                             = (known after apply)
+      [32m+[0m[0m invoke_arn                     = (known after apply)
+      [32m+[0m[0m last_modified                  = (known after apply)
+      [32m+[0m[0m memory_size                    = 1024
+      [32m+[0m[0m package_type                   = "Zip"
+      [32m+[0m[0m publish                        = false
+      [32m+[0m[0m qualified_arn                  = (known after apply)
+      [32m+[0m[0m qualified_invoke_arn           = (known after apply)
+      [32m+[0m[0m region                         = "us-east-1"
+      [32m+[0m[0m reserved_concurrent_executions = -1
+      [32m+[0m[0m response_streaming_invoke_arn  = (known after apply)
+      [32m+[0m[0m role                           = (known after apply)
+      [32m+[0m[0m runtime                        = "python3.11"
+      [32m+[0m[0m signing_job_arn                = (known after apply)
+      [32m+[0m[0m signing_profile_version_arn    = (known after apply)
+      [32m+[0m[0m skip_destroy                   = false
+      [32m+[0m[0m source_code_hash               = "4GqQ8SoWWqws4WGPDYCtDnb5xsEQa2gK/JEuwBS4qmE="
+      [32m+[0m[0m source_code_size               = (known after apply)
+      [32m+[0m[0m tags                           = {
+          [32m+[0m[0m "Name" = "sre-automation-ai-chatbot"
+        }
+      [32m+[0m[0m tags_all                       = {
+          [32m+[0m[0m "Name" = "sre-automation-ai-chatbot"
+        }
+      [32m+[0m[0m timeout                        = 300
+      [32m+[0m[0m version                        = (known after apply)
+
+      [32m+[0m[0m environment {
+          [32m+[0m[0m variables = (known after apply)
+        }
+
+      [32m+[0m[0m ephemeral_storage (known after apply)
+
+      [32m+[0m[0m logging_config (known after apply)
+
+      [32m+[0m[0m tracing_config (known after apply)
+    }
+
+[1m  # module.lambda_ai_chatbot.aws_lambda_permission.api_gateway[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_permission" "api_gateway" {
+      [32m+[0m[0m action              = "lambda:InvokeFunction"
+      [32m+[0m[0m function_name       = "sre-automation-ai-chatbot"
+      [32m+[0m[0m id                  = (known after apply)
+      [32m+[0m[0m principal           = "apigateway.amazonaws.com"
+      [32m+[0m[0m region              = "us-east-1"
+      [32m+[0m[0m statement_id        = "AllowExecutionFromAPIGateway"
+      [32m+[0m[0m statement_id_prefix = (known after apply)
+    }
+
+[1m  # module.lambda_ai_chatbot.aws_lambda_permission.cloudwatch[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_permission" "cloudwatch" {
+      [32m+[0m[0m action              = "lambda:InvokeFunction"
+      [32m+[0m[0m function_name       = "sre-automation-ai-chatbot"
+      [32m+[0m[0m id                  = (known after apply)
+      [32m+[0m[0m principal           = "events.amazonaws.com"
+      [32m+[0m[0m region              = "us-east-1"
+      [32m+[0m[0m statement_id        = "AllowExecutionFromCloudWatch"
+      [32m+[0m[0m statement_id_prefix = (known after apply)
+    }
+
+[1m  # module.lambda_sre_agent.aws_cloudwatch_log_group.lambda[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "lambda" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m deletion_protection_enabled = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m log_group_class             = (known after apply)
+      [32m+[0m[0m name                        = "/aws/lambda/sre-automation-sre-agent"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m retention_in_days           = 7
+      [32m+[0m[0m skip_destroy                = false
+      [32m+[0m[0m tags_all                    = (known after apply)
+    }
+
+[1m  # module.lambda_sre_agent.aws_lambda_function.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_function" "main" {
+      [32m+[0m[0m architectures                  = (known after apply)
+      [32m+[0m[0m arn                            = (known after apply)
+      [32m+[0m[0m code_sha256                    = (known after apply)
+      [32m+[0m[0m filename                       = "modules/lambda/sre-automation-sre-agent.zip"
+      [32m+[0m[0m function_name                  = "sre-automation-sre-agent"
+      [32m+[0m[0m handler                        = "sre_agent.lambda_handler"
+      [32m+[0m[0m id                             = (known after apply)
+      [32m+[0m[0m invoke_arn                     = (known after apply)
+      [32m+[0m[0m last_modified                  = (known after apply)
+      [32m+[0m[0m memory_size                    = 512
+      [32m+[0m[0m package_type                   = "Zip"
+      [32m+[0m[0m publish                        = false
+      [32m+[0m[0m qualified_arn                  = (known after apply)
+      [32m+[0m[0m qualified_invoke_arn           = (known after apply)
+      [32m+[0m[0m region                         = "us-east-1"
+      [32m+[0m[0m reserved_concurrent_executions = -1
+      [32m+[0m[0m response_streaming_invoke_arn  = (known after apply)
+      [32m+[0m[0m role                           = (known after apply)
+      [32m+[0m[0m runtime                        = "python3.11"
+      [32m+[0m[0m signing_job_arn                = (known after apply)
+      [32m+[0m[0m signing_profile_version_arn    = (known after apply)
+      [32m+[0m[0m skip_destroy                   = false
+      [32m+[0m[0m source_code_hash               = "8Tm/P8W64eKhYoP/+QbzQHhu7o2wIexpEpLSYIEKk2A="
+      [32m+[0m[0m source_code_size               = (known after apply)
+      [32m+[0m[0m tags                           = {
+          [32m+[0m[0m "Name" = "sre-automation-sre-agent"
+        }
+      [32m+[0m[0m tags_all                       = {
+          [32m+[0m[0m "Name" = "sre-automation-sre-agent"
+        }
+      [32m+[0m[0m timeout                        = 300
+      [32m+[0m[0m version                        = (known after apply)
+
+      [32m+[0m[0m environment {
+          [32m+[0m[0m variables = (known after apply)
+        }
+
+      [32m+[0m[0m ephemeral_storage (known after apply)
+
+      [32m+[0m[0m logging_config (known after apply)
+
+      [32m+[0m[0m tracing_config (known after apply)
+    }
+
+[1m  # module.lambda_sre_agent.aws_lambda_permission.api_gateway[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_permission" "api_gateway" {
+      [32m+[0m[0m action              = "lambda:InvokeFunction"
+      [32m+[0m[0m function_name       = "sre-automation-sre-agent"
+      [32m+[0m[0m id                  = (known after apply)
+      [32m+[0m[0m principal           = "apigateway.amazonaws.com"
+      [32m+[0m[0m region              = "us-east-1"
+      [32m+[0m[0m statement_id        = "AllowExecutionFromAPIGateway"
+      [32m+[0m[0m statement_id_prefix = (known after apply)
+    }
+
+[1m  # module.lambda_sre_agent.aws_lambda_permission.cloudwatch[0m will be created
+[0m  [32m+[0m[0m resource "aws_lambda_permission" "cloudwatch" {
+      [32m+[0m[0m action              = "lambda:InvokeFunction"
+      [32m+[0m[0m function_name       = "sre-automation-sre-agent"
+      [32m+[0m[0m id                  = (known after apply)
+      [32m+[0m[0m principal           = "events.amazonaws.com"
+      [32m+[0m[0m region              = "us-east-1"
+      [32m+[0m[0m statement_id        = "AllowExecutionFromCloudWatch"
+      [32m+[0m[0m statement_id_prefix = (known after apply)
+    }
+
+[1m  # module.s3.aws_dynamodb_table.terraform_locks[0m will be created
+[0m  [32m+[0m[0m resource "aws_dynamodb_table" "terraform_locks" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m billing_mode     = "PAY_PER_REQUEST"
+      [32m+[0m[0m hash_key         = "LockID"
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m name             = "terraform-locks"
+      [32m+[0m[0m read_capacity    = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m stream_arn       = (known after apply)
+      [32m+[0m[0m stream_label     = (known after apply)
+      [32m+[0m[0m stream_view_type = (known after apply)
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "terraform-locks"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "terraform-locks"
+        }
+      [32m+[0m[0m write_capacity   = (known after apply)
+
+      [32m+[0m[0m attribute {
+          [32m+[0m[0m name = "LockID"
+          [32m+[0m[0m type = "S"
+        }
+
+      [32m+[0m[0m global_secondary_index (known after apply)
+
+      [32m+[0m[0m global_table_witness (known after apply)
+
+      [32m+[0m[0m point_in_time_recovery {
+          [32m+[0m[0m enabled                 = true
+          [32m+[0m[0m recovery_period_in_days = (known after apply)
+        }
+
+      [32m+[0m[0m server_side_encryption {
+          [32m+[0m[0m enabled     = true
+          [32m+[0m[0m kms_key_arn = (known after apply)
+        }
+
+      [32m+[0m[0m ttl (known after apply)
+
+      [32m+[0m[0m warm_throughput (known after apply)
+    }
+
+[1m  # module.s3.aws_s3_bucket.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket" "main" {
+      [32m+[0m[0m acceleration_status         = (known after apply)
+      [32m+[0m[0m acl                         = (known after apply)
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m bucket                      = "sre-automation-logs-995429641089"
+      [32m+[0m[0m bucket_domain_name          = (known after apply)
+      [32m+[0m[0m bucket_prefix               = (known after apply)
+      [32m+[0m[0m bucket_region               = (known after apply)
+      [32m+[0m[0m bucket_regional_domain_name = (known after apply)
+      [32m+[0m[0m force_destroy               = false
+      [32m+[0m[0m hosted_zone_id              = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m object_lock_enabled         = (known after apply)
+      [32m+[0m[0m policy                      = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m request_payer               = (known after apply)
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Name" = "sre-automation-bucket"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Name" = "sre-automation-bucket"
+        }
+      [32m+[0m[0m website_domain              = (known after apply)
+      [32m+[0m[0m website_endpoint            = (known after apply)
+
+      [32m+[0m[0m cors_rule (known after apply)
+
+      [32m+[0m[0m grant (known after apply)
+
+      [32m+[0m[0m lifecycle_rule (known after apply)
+
+      [32m+[0m[0m logging (known after apply)
+
+      [32m+[0m[0m object_lock_configuration (known after apply)
+
+      [32m+[0m[0m replication_configuration (known after apply)
+
+      [32m+[0m[0m server_side_encryption_configuration (known after apply)
+
+      [32m+[0m[0m versioning (known after apply)
+
+      [32m+[0m[0m website (known after apply)
+    }
+
+[1m  # module.s3.aws_s3_bucket_lifecycle_configuration.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_lifecycle_configuration" "main" {
+      [32m+[0m[0m bucket                                 = (known after apply)
+      [32m+[0m[0m expected_bucket_owner                  = (known after apply)
+      [32m+[0m[0m id                                     = (known after apply)
+      [32m+[0m[0m region                                 = "us-east-1"
+      [32m+[0m[0m transition_default_minimum_object_size = "all_storage_classes_128K"
+
+      [32m+[0m[0m rule {
+          [32m+[0m[0m id     = "archive-old-logs"
+          [32m+[0m[0m status = "Enabled"
+            [90m# (1 unchanged attribute hidden)[0m[0m
+
+          [32m+[0m[0m expiration {
+              [32m+[0m[0m days                         = 90
+              [32m+[0m[0m expired_object_delete_marker = false
+            }
+
+          [32m+[0m[0m transition {
+              [32m+[0m[0m days          = 30
+              [32m+[0m[0m storage_class = "GLACIER"
+            }
+        }
+    }
+
+[1m  # module.s3.aws_s3_bucket_public_access_block.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_public_access_block" "main" {
+      [32m+[0m[0m block_public_acls       = true
+      [32m+[0m[0m block_public_policy     = true
+      [32m+[0m[0m bucket                  = (known after apply)
+      [32m+[0m[0m id                      = (known after apply)
+      [32m+[0m[0m ignore_public_acls      = true
+      [32m+[0m[0m region                  = "us-east-1"
+      [32m+[0m[0m restrict_public_buckets = true
+    }
+
+[1m  # module.s3.aws_s3_bucket_server_side_encryption_configuration.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
+      [32m+[0m[0m bucket = (known after apply)
+      [32m+[0m[0m id     = (known after apply)
+      [32m+[0m[0m region = "us-east-1"
+
+      [32m+[0m[0m rule {
+          [32m+[0m[0m blocked_encryption_types = []
+
+          [32m+[0m[0m apply_server_side_encryption_by_default {
+              [32m+[0m[0m sse_algorithm     = "AES256"
+                [90m# (1 unchanged attribute hidden)[0m[0m
+            }
+        }
+    }
+
+[1m  # module.s3.aws_s3_bucket_versioning.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_s3_bucket_versioning" "main" {
+      [32m+[0m[0m bucket = (known after apply)
+      [32m+[0m[0m id     = (known after apply)
+      [32m+[0m[0m region = "us-east-1"
+
+      [32m+[0m[0m versioning_configuration {
+          [32m+[0m[0m mfa_delete = (known after apply)
+          [32m+[0m[0m status     = "Enabled"
+        }
+    }
+
+[1m  # module.sns.aws_sns_topic.notifications[0m will be created
+[0m  [32m+[0m[0m resource "aws_sns_topic" "notifications" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m beginning_archive_time      = (known after apply)
+      [32m+[0m[0m content_based_deduplication = false
+      [32m+[0m[0m display_name                = "SRE Automation Notifications"
+      [32m+[0m[0m fifo_throughput_scope       = (known after apply)
+      [32m+[0m[0m fifo_topic                  = false
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m kms_master_key_id           = "alias/aws/sns"
+      [32m+[0m[0m name                        = "sre-automation-notifications"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m owner                       = (known after apply)
+      [32m+[0m[0m policy                      = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m signature_version           = (known after apply)
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Name" = "sre-automation-notifications"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Name" = "sre-automation-notifications"
+        }
+      [32m+[0m[0m tracing_config              = (known after apply)
+    }
+
+[1m  # module.sns.aws_sns_topic_policy.notifications[0m will be created
+[0m  [32m+[0m[0m resource "aws_sns_topic_policy" "notifications" {
+      [32m+[0m[0m arn    = (known after apply)
+      [32m+[0m[0m id     = (known after apply)
+      [32m+[0m[0m owner  = (known after apply)
+      [32m+[0m[0m policy = (known after apply)
+      [32m+[0m[0m region = "us-east-1"
+    }
+
+[1m  # module.vpc.aws_cloudwatch_log_group.vpc_flow_logs[0m will be created
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
+      [32m+[0m[0m arn                         = (known after apply)
+      [32m+[0m[0m deletion_protection_enabled = (known after apply)
+      [32m+[0m[0m id                          = (known after apply)
+      [32m+[0m[0m log_group_class             = (known after apply)
+      [32m+[0m[0m name                        = "/aws/vpc/sre-automation-flow-logs"
+      [32m+[0m[0m name_prefix                 = (known after apply)
+      [32m+[0m[0m region                      = "us-east-1"
+      [32m+[0m[0m retention_in_days           = 7
+      [32m+[0m[0m skip_destroy                = false
+      [32m+[0m[0m tags                        = {
+          [32m+[0m[0m "Name" = "sre-automation-vpc-flow-logs"
+        }
+      [32m+[0m[0m tags_all                    = {
+          [32m+[0m[0m "Name" = "sre-automation-vpc-flow-logs"
+        }
+    }
+
+[1m  # module.vpc.aws_eip.nat[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_eip" "nat" {
+      [32m+[0m[0m allocation_id        = (known after apply)
+      [32m+[0m[0m arn                  = (known after apply)
+      [32m+[0m[0m association_id       = (known after apply)
+      [32m+[0m[0m carrier_ip           = (known after apply)
+      [32m+[0m[0m customer_owned_ip    = (known after apply)
+      [32m+[0m[0m domain               = "vpc"
+      [32m+[0m[0m id                   = (known after apply)
+      [32m+[0m[0m instance             = (known after apply)
+      [32m+[0m[0m ipam_pool_id         = (known after apply)
+      [32m+[0m[0m network_border_group = (known after apply)
+      [32m+[0m[0m network_interface    = (known after apply)
+      [32m+[0m[0m private_dns          = (known after apply)
+      [32m+[0m[0m private_ip           = (known after apply)
+      [32m+[0m[0m ptr_record           = (known after apply)
+      [32m+[0m[0m public_dns           = (known after apply)
+      [32m+[0m[0m public_ip            = (known after apply)
+      [32m+[0m[0m public_ipv4_pool     = (known after apply)
+      [32m+[0m[0m region               = "us-east-1"
+      [32m+[0m[0m tags                 = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-eip-1"
+        }
+      [32m+[0m[0m tags_all             = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-eip-1"
+        }
+    }
+
+[1m  # module.vpc.aws_eip.nat[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_eip" "nat" {
+      [32m+[0m[0m allocation_id        = (known after apply)
+      [32m+[0m[0m arn                  = (known after apply)
+      [32m+[0m[0m association_id       = (known after apply)
+      [32m+[0m[0m carrier_ip           = (known after apply)
+      [32m+[0m[0m customer_owned_ip    = (known after apply)
+      [32m+[0m[0m domain               = "vpc"
+      [32m+[0m[0m id                   = (known after apply)
+      [32m+[0m[0m instance             = (known after apply)
+      [32m+[0m[0m ipam_pool_id         = (known after apply)
+      [32m+[0m[0m network_border_group = (known after apply)
+      [32m+[0m[0m network_interface    = (known after apply)
+      [32m+[0m[0m private_dns          = (known after apply)
+      [32m+[0m[0m private_ip           = (known after apply)
+      [32m+[0m[0m ptr_record           = (known after apply)
+      [32m+[0m[0m public_dns           = (known after apply)
+      [32m+[0m[0m public_ip            = (known after apply)
+      [32m+[0m[0m public_ipv4_pool     = (known after apply)
+      [32m+[0m[0m region               = "us-east-1"
+      [32m+[0m[0m tags                 = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-eip-2"
+        }
+      [32m+[0m[0m tags_all             = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-eip-2"
+        }
+    }
+
+[1m  # module.vpc.aws_flow_log.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_flow_log" "main" {
+      [32m+[0m[0m arn                      = (known after apply)
+      [32m+[0m[0m iam_role_arn             = (known after apply)
+      [32m+[0m[0m id                       = (known after apply)
+      [32m+[0m[0m log_destination          = (known after apply)
+      [32m+[0m[0m log_destination_type     = "cloud-watch-logs"
+      [32m+[0m[0m log_format               = (known after apply)
+      [32m+[0m[0m max_aggregation_interval = 600
+      [32m+[0m[0m region                   = "us-east-1"
+      [32m+[0m[0m tags                     = {
+          [32m+[0m[0m "Name" = "sre-automation-vpc-flow-logs"
+        }
+      [32m+[0m[0m tags_all                 = {
+          [32m+[0m[0m "Name" = "sre-automation-vpc-flow-logs"
+        }
+      [32m+[0m[0m traffic_type             = "ALL"
+      [32m+[0m[0m vpc_id                   = (known after apply)
+    }
+
+[1m  # module.vpc.aws_iam_role.vpc_flow_logs[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role" "vpc_flow_logs" {
+      [32m+[0m[0m arn                   = (known after apply)
+      [32m+[0m[0m assume_role_policy    = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action    = "sts:AssumeRole"
+                      [32m+[0m[0m Effect    = "Allow"
+                      [32m+[0m[0m Principal = {
+                          [32m+[0m[0m Service = "vpc-flow-logs.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m create_date           = (known after apply)
+      [32m+[0m[0m force_detach_policies = false
+      [32m+[0m[0m id                    = (known after apply)
+      [32m+[0m[0m managed_policy_arns   = (known after apply)
+      [32m+[0m[0m max_session_duration  = 3600
+      [32m+[0m[0m name                  = "sre-automation-vpc-flow-logs-role"
+      [32m+[0m[0m name_prefix           = (known after apply)
+      [32m+[0m[0m path                  = "/"
+      [32m+[0m[0m tags_all              = (known after apply)
+      [32m+[0m[0m unique_id             = (known after apply)
+
+      [32m+[0m[0m inline_policy (known after apply)
+    }
+
+[1m  # module.vpc.aws_iam_role_policy.vpc_flow_logs[0m will be created
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "vpc_flow_logs" {
+      [32m+[0m[0m id          = (known after apply)
+      [32m+[0m[0m name        = "sre-automation-vpc-flow-logs-policy"
+      [32m+[0m[0m name_prefix = (known after apply)
+      [32m+[0m[0m policy      = jsonencode(
+            {
+              [32m+[0m[0m Statement = [
+                  [32m+[0m[0m {
+                      [32m+[0m[0m Action   = [
+                          [32m+[0m[0m "logs:CreateLogGroup",
+                          [32m+[0m[0m "logs:CreateLogStream",
+                          [32m+[0m[0m "logs:PutLogEvents",
+                          [32m+[0m[0m "logs:DescribeLogGroups",
+                          [32m+[0m[0m "logs:DescribeLogStreams",
+                        ]
+                      [32m+[0m[0m Effect   = "Allow"
+                      [32m+[0m[0m Resource = "*"
+                    },
+                ]
+              [32m+[0m[0m Version   = "2012-10-17"
+            }
+        )
+      [32m+[0m[0m role        = (known after apply)
+    }
+
+[1m  # module.vpc.aws_internet_gateway.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_internet_gateway" "main" {
+      [32m+[0m[0m arn      = (known after apply)
+      [32m+[0m[0m id       = (known after apply)
+      [32m+[0m[0m owner_id = (known after apply)
+      [32m+[0m[0m region   = "us-east-1"
+      [32m+[0m[0m tags     = {
+          [32m+[0m[0m "Name" = "sre-automation-igw"
+        }
+      [32m+[0m[0m tags_all = {
+          [32m+[0m[0m "Name" = "sre-automation-igw"
+        }
+      [32m+[0m[0m vpc_id   = (known after apply)
+    }
+
+[1m  # module.vpc.aws_nat_gateway.main[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_nat_gateway" "main" {
+      [32m+[0m[0m allocation_id                      = (known after apply)
+      [32m+[0m[0m association_id                     = (known after apply)
+      [32m+[0m[0m auto_provision_zones               = (known after apply)
+      [32m+[0m[0m auto_scaling_ips                   = (known after apply)
+      [32m+[0m[0m availability_mode                  = (known after apply)
+      [32m+[0m[0m connectivity_type                  = "public"
+      [32m+[0m[0m id                                 = (known after apply)
+      [32m+[0m[0m network_interface_id               = (known after apply)
+      [32m+[0m[0m private_ip                         = (known after apply)
+      [32m+[0m[0m public_ip                          = (known after apply)
+      [32m+[0m[0m region                             = "us-east-1"
+      [32m+[0m[0m regional_nat_gateway_address       = (known after apply)
+      [32m+[0m[0m regional_nat_gateway_auto_mode     = (known after apply)
+      [32m+[0m[0m route_table_id                     = (known after apply)
+      [32m+[0m[0m secondary_allocation_ids           = (known after apply)
+      [32m+[0m[0m secondary_private_ip_address_count = (known after apply)
+      [32m+[0m[0m secondary_private_ip_addresses     = (known after apply)
+      [32m+[0m[0m subnet_id                          = (known after apply)
+      [32m+[0m[0m tags                               = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-1"
+        }
+      [32m+[0m[0m tags_all                           = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-1"
+        }
+      [32m+[0m[0m vpc_id                             = (known after apply)
+    }
+
+[1m  # module.vpc.aws_nat_gateway.main[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_nat_gateway" "main" {
+      [32m+[0m[0m allocation_id                      = (known after apply)
+      [32m+[0m[0m association_id                     = (known after apply)
+      [32m+[0m[0m auto_provision_zones               = (known after apply)
+      [32m+[0m[0m auto_scaling_ips                   = (known after apply)
+      [32m+[0m[0m availability_mode                  = (known after apply)
+      [32m+[0m[0m connectivity_type                  = "public"
+      [32m+[0m[0m id                                 = (known after apply)
+      [32m+[0m[0m network_interface_id               = (known after apply)
+      [32m+[0m[0m private_ip                         = (known after apply)
+      [32m+[0m[0m public_ip                          = (known after apply)
+      [32m+[0m[0m region                             = "us-east-1"
+      [32m+[0m[0m regional_nat_gateway_address       = (known after apply)
+      [32m+[0m[0m regional_nat_gateway_auto_mode     = (known after apply)
+      [32m+[0m[0m route_table_id                     = (known after apply)
+      [32m+[0m[0m secondary_allocation_ids           = (known after apply)
+      [32m+[0m[0m secondary_private_ip_address_count = (known after apply)
+      [32m+[0m[0m secondary_private_ip_addresses     = (known after apply)
+      [32m+[0m[0m subnet_id                          = (known after apply)
+      [32m+[0m[0m tags                               = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-2"
+        }
+      [32m+[0m[0m tags_all                           = {
+          [32m+[0m[0m "Name" = "sre-automation-nat-2"
+        }
+      [32m+[0m[0m vpc_id                             = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table.private[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table" "private" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m owner_id         = (known after apply)
+      [32m+[0m[0m propagating_vgws = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m route            = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_block                 = "0.0.0.0/0"
+              [32m+[0m[0m nat_gateway_id             = (known after apply)
+                [90m# (11 unchanged attributes hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "sre-automation-private-rt-1"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "sre-automation-private-rt-1"
+        }
+      [32m+[0m[0m vpc_id           = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table.private[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table" "private" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m owner_id         = (known after apply)
+      [32m+[0m[0m propagating_vgws = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m route            = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_block                 = "0.0.0.0/0"
+              [32m+[0m[0m nat_gateway_id             = (known after apply)
+                [90m# (11 unchanged attributes hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "sre-automation-private-rt-2"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "sre-automation-private-rt-2"
+        }
+      [32m+[0m[0m vpc_id           = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table.public[0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table" "public" {
+      [32m+[0m[0m arn              = (known after apply)
+      [32m+[0m[0m id               = (known after apply)
+      [32m+[0m[0m owner_id         = (known after apply)
+      [32m+[0m[0m propagating_vgws = (known after apply)
+      [32m+[0m[0m region           = "us-east-1"
+      [32m+[0m[0m route            = [
+          [32m+[0m[0m {
+              [32m+[0m[0m cidr_block                 = "0.0.0.0/0"
+              [32m+[0m[0m gateway_id                 = (known after apply)
+                [90m# (11 unchanged attributes hidden)[0m[0m
+            },
+        ]
+      [32m+[0m[0m tags             = {
+          [32m+[0m[0m "Name" = "sre-automation-public-rt"
+        }
+      [32m+[0m[0m tags_all         = {
+          [32m+[0m[0m "Name" = "sre-automation-public-rt"
+        }
+      [32m+[0m[0m vpc_id           = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table_association.private[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "private" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m region         = "us-east-1"
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table_association.private[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "private" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m region         = "us-east-1"
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table_association.public[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m region         = "us-east-1"
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # module.vpc.aws_route_table_association.public[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m[0m id             = (known after apply)
+      [32m+[0m[0m region         = "us-east-1"
+      [32m+[0m[0m route_table_id = (known after apply)
+      [32m+[0m[0m subnet_id      = (known after apply)
+    }
+
+[1m  # module.vpc.aws_subnet.private[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "private" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "us-east-1a"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.128.0/18"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                                = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = false
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m region                                         = "us-east-1"
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "sre-automation-private-subnet-1"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "sre-automation-private-subnet-1"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # module.vpc.aws_subnet.private[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "private" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "us-east-1b"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.192.0/18"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                                = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = false
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m region                                         = "us-east-1"
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "sre-automation-private-subnet-2"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "sre-automation-private-subnet-2"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # module.vpc.aws_subnet.public[0][0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "us-east-1a"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.0.0/18"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                                = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = true
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m region                                         = "us-east-1"
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "sre-automation-public-subnet-1"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "sre-automation-public-subnet-1"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # module.vpc.aws_subnet.public[1][0m will be created
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m[0m arn                                            = (known after apply)
+      [32m+[0m[0m assign_ipv6_address_on_creation                = false
+      [32m+[0m[0m availability_zone                              = "us-east-1b"
+      [32m+[0m[0m availability_zone_id                           = (known after apply)
+      [32m+[0m[0m cidr_block                                     = "10.0.64.0/18"
+      [32m+[0m[0m enable_dns64                                   = false
+      [32m+[0m[0m enable_resource_name_dns_a_record_on_launch    = false
+      [32m+[0m[0m enable_resource_name_dns_aaaa_record_on_launch = false
+      [32m+[0m[0m id                                             = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                                = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_association_id                 = (known after apply)
+      [32m+[0m[0m ipv6_native                                    = false
+      [32m+[0m[0m map_public_ip_on_launch                        = true
+      [32m+[0m[0m owner_id                                       = (known after apply)
+      [32m+[0m[0m private_dns_hostname_type_on_launch            = (known after apply)
+      [32m+[0m[0m region                                         = "us-east-1"
+      [32m+[0m[0m tags                                           = {
+          [32m+[0m[0m "Name" = "sre-automation-public-subnet-2"
+        }
+      [32m+[0m[0m tags_all                                       = {
+          [32m+[0m[0m "Name" = "sre-automation-public-subnet-2"
+        }
+      [32m+[0m[0m vpc_id                                         = (known after apply)
+    }
+
+[1m  # module.vpc.aws_vpc.main[0m will be created
+[0m  [32m+[0m[0m resource "aws_vpc" "main" {
+      [32m+[0m[0m arn                                  = (known after apply)
+      [32m+[0m[0m cidr_block                           = "10.0.0.0/16"
+      [32m+[0m[0m default_network_acl_id               = (known after apply)
+      [32m+[0m[0m default_route_table_id               = (known after apply)
+      [32m+[0m[0m default_security_group_id            = (known after apply)
+      [32m+[0m[0m dhcp_options_id                      = (known after apply)
+      [32m+[0m[0m enable_dns_hostnames                 = true
+      [32m+[0m[0m enable_dns_support                   = true
+      [32m+[0m[0m enable_network_address_usage_metrics = (known after apply)
+      [32m+[0m[0m id                                   = (known after apply)
+      [32m+[0m[0m instance_tenancy                     = "default"
+      [32m+[0m[0m ipv6_association_id                  = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block                      = (known after apply)
+      [32m+[0m[0m ipv6_cidr_block_network_border_group = (known after apply)
+      [32m+[0m[0m main_route_table_id                  = (known after apply)
+      [32m+[0m[0m owner_id                             = (known after apply)
+      [32m+[0m[0m region                               = "us-east-1"
+      [32m+[0m[0m tags                                 = {
+          [32m+[0m[0m "Name" = "sre-automation-vpc"
+        }
+      [32m+[0m[0m tags_all                             = {
+          [32m+[0m[0m "Name" = "sre-automation-vpc"
+        }
+    }
+
+[1mPlan:[0m [0m68 to add, 0 to change, 0 to destroy.
+
+Changes to Outputs:
+  [32m+[0m[0m account_id            = "995429641089"
+  [32m+[0m[0m cloudwatch_alarm_cpu  = "sre-automation-cpu-high"
+  [32m+[0m[0m dynamodb_table_name   = "sre-automation-resize-requests"
+  [32m+[0m[0m ec2_instance_id       = (known after apply)
+  [32m+[0m[0m lambda_ai_chatbot_arn = (known after apply)
+  [32m+[0m[0m lambda_sre_agent_arn  = (known after apply)
+  [32m+[0m[0m s3_bucket_name        = (known after apply)
+  [32m+[0m[0m sns_topic_arn         = (known after apply)
+  [32m+[0m[0m vpc_id                = (known after apply)

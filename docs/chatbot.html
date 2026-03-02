@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRE AI Assistant - ChatBot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .chat-box {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.5;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+
+        .input-area {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #questionInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        #questionInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #sendBtn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #sendBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        #sendBtn:active {
+            transform: translateY(0);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .welcome-message h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .example-questions {
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .example-questions p {
+            margin: 8px 0;
+            padding: 8px;
+            background: white;
+            border-left: 3px solid #667eea;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .example-questions p:hover {
+            background: #f0f0f0;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #c33;
+        }
+
+        .info-box {
+            background: #f0f7ff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 SRE AI Assistant</h1>
+            <p>Ask questions about your infrastructure performance</p>
+        </div>
+
+        <div class="chat-box" id="chatBox">
+            <div class="welcome-message">
+                <h3>Welcome to SRE AI Assistant!</h3>
+                <p>Ask questions about your infrastructure, performance issues, or get recommendations.</p>
+                <div class="example-questions">
+                    <p onclick="askQuestion('Why is CPU usage high?')">💡 Why is CPU usage high?</p>
+                    <p onclick="askQuestion('Memory usage is at 90%, should I resize?')">💡 Memory usage is at 90%, should I resize?</p>
+                    <p onclick="askQuestion('Disk space warning - only 2GB left')">💡 Disk space warning - only 2GB left</p>
+                    <p onclick="askQuestion('Response time increased from 200ms to 5000ms')">💡 Response time increased</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <input 
+                    type="text" 
+                    id="questionInput" 
+                    placeholder="Ask me about your infrastructure..."
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button id="sendBtn" onclick="sendQuestion()">Send</button>
+            </div>
+            <div class="info-box">
+                API Endpoint: <code>https://xr0c9s4yvj.execute-api.us-east-1.amazonaws.com/dev/ask</code>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://xr0c9s4yvj.execute-api.us-east-1.amazonaws.com/dev/ask";
+        const chatBox = document.getElementById("chatBox");
+        const questionInput = document.getElementById("questionInput");
+        const sendBtn = document.getElementById("sendBtn");
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendQuestion();
+            }
+        }
+
+        function askQuestion(question) {
+            questionInput.value = question;
+            questionInput.focus();
+        }
+
+        function sendQuestion() {
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                alert("Please enter a question");
+                return;
+            }
+
+            // Add user message to chat
+            addMessage(question, "user");
+            questionInput.value = "";
+            sendBtn.disabled = true;
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Send to API
+            fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                removeTypingIndicator();
+                
+                // Extract answer from response
+                let answer = data.answer || "No response";
+                
+                // Try to parse if it's JSON string
+                try {
+                    if (typeof answer === "string" && answer.startsWith("{")) {
+                        const parsed = JSON.parse(answer);
+                        answer = parsed.analysis || parsed.body || JSON.stringify(parsed, null, 2);
+                    }
+                } catch (e) {
+                    // Not JSON, use as-is
+                }
+
+                addMessage(answer, "bot");
+                sendBtn.disabled = false;
+                questionInput.focus();
+            })
+            .catch(error => {
+                removeTypingIndicator();
+                addMessage(`Error: ${error.message || "Failed to get response"}`, "bot", true);
+                sendBtn.disabled = false;
+                questionInput.focus();
+            });
+        }
+
+        function addMessage(text, sender, isError = false) {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${sender}`;
+            
+            const contentDiv = document.createElement("div");
+            contentDiv.className = `message-content ${isError ? "error-message" : ""}`;
+            contentDiv.textContent = text;
+            
+            messageDiv.appendChild(contentDiv);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = "message bot";
+            messageDiv.id = "typingIndicator";
+            
+            const contentDiv = document.createElement("div");
+            contentDiv.className = "message-content";
+            contentDiv.innerHTML = `<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+            
+            messageDiv.appendChild(contentDiv);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById("typingIndicator");
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Set focus on load
+        window.addEventListener("load", () => {
+            questionInput.focus();
+        });
+    </script>
+</body>
+</html>

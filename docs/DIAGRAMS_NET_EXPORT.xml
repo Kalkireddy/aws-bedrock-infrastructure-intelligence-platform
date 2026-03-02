@@ -1,0 +1,168 @@
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;mxfile host="app.diagrams.net" modified="2026-03-01T13:30:00.000Z" agent="5.0" version="24.1.0" type="device"&gt;
+  &lt;diagram id="sre-automation-arch" name="SRE Automation Architecture"&gt;
+    &lt;mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" background="ffffff" math="0" shadow="0"&gt;
+      &lt;root&gt;
+        &lt;mxCell id="0" /&gt;
+        &lt;mxCell id="1" parent="0" /&gt;
+
+        &lt;!-- AWS Container --&gt;
+        &lt;mxCell id="aws-container" value="AWS Account (995429641089)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=14;fontStyle=1;fillColor=#232f3e;fontColor=#ffffff;strokeColor=#FF9900;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="50" y="50" width="1300" height="800" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Compute Layer Header --&gt;
+        &lt;mxCell id="compute-header" value="🖥️ COMPUTE LAYER" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fillColor=#FF9900;fontColor=#000;rounded=0;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="70" y="80" width="300" height="30" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- EC2 Instance --&gt;
+        &lt;mxCell id="ec2" value="EC2 Instance&lt;br/&gt;t3.micro&lt;br/&gt;i-0c5ce251dbadfcd56&lt;br/&gt;&lt;br/&gt;💻 Sample App&lt;br/&gt;📝 CloudWatch Agent&lt;br/&gt;📊 Metrics" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#FF9900;fontColor=#000;strokeColor=#FF6600;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="80" y="130" width="180" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- SRE Agent Lambda --&gt;
+        &lt;mxCell id="sre-lambda" value="🤖 SRE Agent&lt;br/&gt;Lambda&lt;br/&gt;&lt;br/&gt;• Fetch Metrics&lt;br/&gt;• Analyze Trends&lt;br/&gt;• Forecast 2h&lt;br/&gt;• Create Requests" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#FF9900;fontColor=#000;strokeColor=#FF6600;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="290" y="130" width="160" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Maintenance Lambda --&gt;
+        &lt;mxCell id="maint-lambda" value="⚙️ Maintenance&lt;br/&gt;Lambda&lt;br/&gt;&lt;br/&gt;• Stop EC2&lt;br/&gt;• Modify Type&lt;br/&gt;• Start EC2&lt;br/&gt;• Notify" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#FF9900;fontColor=#000;strokeColor=#FF6600;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="480" y="130" width="160" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- AI Chatbot Lambda --&gt;
+        &lt;mxCell id="chat-lambda" value="💬 AI Chatbot&lt;br/&gt;Lambda&lt;br/&gt;(Nova Pro)&lt;br/&gt;&lt;br/&gt;• Fetch Logs&lt;br/&gt;• Analyze Patterns&lt;br/&gt;• Cache 24h" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#FF9900;fontColor=#000;strokeColor=#FF6600;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="670" y="130" width="160" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Monitoring Layer Header --&gt;
+        &lt;mxCell id="monitoring-header" value="📊 MONITORING &amp; LOGS" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fillColor=#2E8B57;fontColor=#fff;rounded=0;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="70" y="280" width="360" height="30" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- CloudWatch --&gt;
+        &lt;mxCell id="cloudwatch" value="CloudWatch&lt;br/&gt;&lt;br/&gt;• Metrics (60s)&lt;br/&gt;• Logs (7-day)&lt;br/&gt;• Alarms&lt;br/&gt;• Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#2E8B57;fontColor=#fff;strokeColor=#228B22;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="80" y="330" width="150" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- EventBridge --&gt;
+        &lt;mxCell id="eventbridge" value="EventBridge&lt;br/&gt;&lt;br/&gt;⏰ Scheduled&lt;br/&gt;Rule&lt;br/&gt;2 AM UTC Daily" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#A355A8;fontColor=#fff;strokeColor=#8B008B;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="260" y="330" width="140" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Alarms --&gt;
+        &lt;mxCell id="alarms" value="📢 Alarms&lt;br/&gt;&lt;br/&gt;CPU &gt; 75%&lt;br/&gt;Disk &gt; 80%&lt;br/&gt;&lt;br/&gt;Current: OK ✓" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#DC143C;fontColor=#fff;strokeColor=#B22222;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="430" y="330" width="130" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Storage Layer Header --&gt;
+        &lt;mxCell id="storage-header" value="💾 STORAGE &amp; DATABASE" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fillColor=#4169E1;fontColor=#fff;rounded=0;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="600" y="280" width="320" height="30" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- S3 Bucket --&gt;
+        &lt;mxCell id="s3" value="S3 Bucket&lt;br/&gt;&lt;br/&gt;sre-automation-logs&lt;br/&gt;30+ days history&lt;br/&gt;Versioned&lt;br/&gt;Encrypted" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#4169E1;fontColor=#fff;strokeColor=#1E90FF;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="600" y="330" width="160" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- DynamoDB --&gt;
+        &lt;mxCell id="dynamodb" value="DynamoDB&lt;br/&gt;&lt;br/&gt;• resize-requests&lt;br/&gt;• approvals&lt;br/&gt;• chatbot-cache&lt;br/&gt;&lt;br/&gt;On-Demand" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#4169E1;fontColor=#fff;strokeColor=#1E90FF;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="790" y="330" width="150" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Notifications Layer Header --&gt;
+        &lt;mxCell id="notif-header" value="📧 NOTIFICATIONS &amp; AI" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;fillColor=#DC143C;fontColor=#fff;rounded=0;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="980" y="280" width="320" height="30" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- SNS Topic --&gt;
+        &lt;mxCell id="sns" value="SNS Topic&lt;br/&gt;&lt;br/&gt;sre-automation-notifications&lt;br/&gt;&lt;br/&gt;📧 Email Alerts" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#DC143C;fontColor=#fff;strokeColor=#8B0000;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="980" y="330" width="160" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Bedrock --&gt;
+        &lt;mxCell id="bedrock" value="Amazon Bedrock&lt;br/&gt;&lt;br/&gt;AWS Nova Pro&lt;br/&gt;AI Model&lt;br/&gt;&lt;br/&gt;Log Analysis" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#9370DB;fontColor=#fff;strokeColor=#8B008B;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="1170" y="330" width="150" height="120" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- External - Team Email --&gt;
+        &lt;mxCell id="team" value="👥 Your Team&lt;br/&gt;&lt;br/&gt;Email Notifications" style="rounded=1;whiteSpace=wrap;html=1;fontSize=10;fillColor=#333;fontColor=#fff;strokeColor=#666;strokeWidth=2;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="980" y="530" width="160" height="100" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- VPC Box --&gt;
+        &lt;mxCell id="vpc-box" value="VPC (10.0.0.0/16) - us-east-1a, us-east-1b" style="dashed=1;dashPattern=5,5;rounded=0;fontSize=10;fill=none;strokeColor=#999;strokeWidth=1;" vertex="1" parent="1"&gt;
+          &lt;mxGeometry x="60" y="100" width="620" height="200" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Arrows --&gt;
+        &lt;!-- EC2 to CloudWatch --&gt;
+        &lt;mxCell id="edge1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="ec2" target="cloudwatch"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- CloudWatch to SRE Agent --&gt;
+        &lt;mxCell id="edge2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="cloudwatch" target="sre-lambda"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- SRE Agent to DynamoDB --&gt;
+        &lt;mxCell id="edge3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="sre-lambda" target="dynamodb"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- SRE Agent to SNS --&gt;
+        &lt;mxCell id="edge4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;strokeColor=#FF0000;" edge="1" parent="1" source="sre-lambda" target="sns"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- EventBridge to Maintenance Lambda --&gt;
+        &lt;mxCell id="edge5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;strokeColor=#A355A8;" edge="1" parent="1" source="eventbridge" target="maint-lambda"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Maintenance Lambda to EC2 --&gt;
+        &lt;mxCell id="edge6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;strokeColor=#FF6600;" edge="1" parent="1" source="maint-lambda" target="ec2"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Maintenance Lambda to DynamoDB --&gt;
+        &lt;mxCell id="edge7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="maint-lambda" target="dynamodb"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- Maintenance Lambda to SNS --&gt;
+        &lt;mxCell id="edge8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="maint-lambda" target="sns"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- CloudWatch to S3 --&gt;
+        &lt;mxCell id="edge9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="cloudwatch" target="s3"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- S3 to AI Chatbot --&gt;
+        &lt;mxCell id="edge10" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="s3" target="chat-lambda"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- AI Chatbot to Bedrock --&gt;
+        &lt;mxCell id="edge11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="chat-lambda" target="bedrock"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- AI Chatbot to DynamoDB Cache --&gt;
+        &lt;mxCell id="edge12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;" edge="1" parent="1" source="chat-lambda" target="dynamodb"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+        &lt;!-- SNS to Team Email --&gt;
+        &lt;mxCell id="edge13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;endArrow=classic;endFill=1;strokeColor=#DC143C;strokeWidth=2;" edge="1" parent="1" source="sns" target="team"&gt;
+          &lt;mxGeometry relative="1" as="geometry" /&gt;
+        &lt;/mxCell&gt;
+
+      &lt;/root&gt;
+    &lt;/mxGraphModel&gt;
+  &lt;/diagram&gt;
+&lt;/mxfile&gt;
