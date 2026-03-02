@@ -14,9 +14,11 @@
 This solution implements a complete SRE automation platform with 4 phases:
 
 1. **Terraform + GitLab CI/CD**: Infrastructure as Code with automated deployment
-2. **EC2 Resize Automation**: Intelligent resource scaling with predictive analytics
-3. **AI Log Analysis**: Bedrock-powered log intelligence and anomaly detection
-4. **Demo & Documentation**: Full operational runbook
+2. **EC2 Resize Automation**: Intelligent resource scaling with predictive analytics (every 2 hours)
+3. **S3 Metric Logging**: Automatic metric collection and storage (CPU/Memory/Disk percentages)
+4. **AI Log Analysis**: AWS Bedrock Nova Pro-powered log intelligence and anomaly detection
+5. **REST API**: API Gateway endpoint for interactive chatbot queries
+6. **Demo & Documentation**: Full operational runbook
 
 ## Phase 1: Infrastructure Deployment
 
@@ -150,7 +152,21 @@ aws cloudwatch describe-alarms \
 
 ## Phase 4: SRE Agent Configuration
 
-### Step 4.1: Deploy Sample Logs
+### Step 4.1: Verify EventBridge Schedule
+
+The SRE Agent runs automatically every 2 hours via EventBridge:
+
+```bash
+# Verify the EventBridge rule
+aws events describe-rule \
+  --name sre-automation-sre-agent-schedule \
+  --query '[State, ScheduleExpression]'
+
+# Expected output:
+# ["ENABLED", "rate(2 hours)"]
+```
+
+### Step 4.2: Deploy Sample Logs
 
 Generate test data for the SRE Agent:
 
@@ -162,7 +178,7 @@ python3 scripts/generate-sample-logs.py \
   --cloudwatch-stream "sample-logs"
 ```
 
-### Step 4.2: Trigger SRE Agent Manually
+### Step 4.3: Trigger SRE Agent Manually
 
 ```bash
 # First, ensure Lambda has environment variables set
@@ -172,17 +188,40 @@ aws lambda get-function-configuration \
   --function-name "sre-automation-sre-agent" \
   --query 'Environment.Variables'
 
-# Invoke the function
+# Invoke the function manually
 aws lambda invoke \
   --function-name "sre-automation-sre-agent" \
   --log-type Tail \
   /tmp/sre-agent-response.json
 
-# Check response
+# Check response (will include S3 save confirmation)
 cat /tmp/sre-agent-response.json | python3 -m json.tool
+
+# Verify metrics saved to S3
+aws s3 ls s3://$(terraform output -raw s3_bucket_name)/logs/ --recursive
 ```
 
-### Step 4.3: Approve Resize Request
+### Step 4.4: Check S3 Metric Logs
+
+The SRE Agent saves formatted metric logs every 2 hours:
+
+```bash
+# Read the latest metric log
+aws s3 cp s3://$(terraform output -raw s3_bucket_name)/logs/latest-metrics.txt - | head -20
+
+# Expected format:
+# METRICS:
+#   CPU Usage:
+#     - Current: 58.18%
+#     - Average: 48.82%
+#     - Peak: 62.21%
+#   Memory Usage:
+#     - Current: 77.98%
+#     - Average: 45.45%
+#     - Peak: 87.09%
+```
+
+### Step 4.5: Approve Resize Request
 
 When SRE Agent recommends a resize, approve it via Parameter Store:
 
@@ -219,56 +258,101 @@ aws lambda invoke \
 cat /tmp/maintenance-response.json | python3 -m json.tool
 ```
 
-## Phase 5: AI Chatbot Setup
+## Phase 5: API Gateway & Bedrock Integration
 
-### Step 5.1: Enable Bedrock Access
+### Step 5.1: Verify API Gateway Setup
 
 ```bash
-# Ensure Bedrock is available in your region
+# Get API Gateway ID
+API_GATEWAY_ID=$(terraform output -raw api_gateway_id)
+echo "API Gateway ID: $API_GATEWAY_ID"
+
+# Test REST endpoint
+curl -X POST https://${API_GATEWAY_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What is my infrastructure status?"
+  }' | jq '.'
+```
+
+### Step 5.2: Verify Bedrock Nova Pro Access
+
+```bash
+# List available Nova Pro models
 aws bedrock list-foundation-models \
   --region us-east-1 \
-  --query 'modelSummaries[?contains(modelId, `claude`)].modelId'
+  --query "modelSummaries[?contains(modelId, 'nova')].[modelId,modelName]" \
+  --output table
 
-# If no models shown, enable in us-west-2
-export AWS_DEFAULT_REGION=us-west-2
+# Test Bedrock invocation
+aws bedrock-runtime invoke-model \
+  --model-id "us.amazon.nova-pro-1:0" \
+  --content-type "application/json" \
+  --accept "application/json" \
+  --body '{"prompt":"Analyze these metrics: CPU 85%, Memory 72%, Disk 45%"}' \
+  /tmp/bedrock-response.json
+
+cat /tmp/bedrock-response.json | python3 -m json.tool
 ```
 
-### Step 5.2: Generate Test Logs
+### Step 5.3: Test S3 Metric Log Reading
 
 ```bash
-# Generate logs that will be analyzed
-python3 scripts/generate-sample-logs.py \
-  --type combined \
-  --count 150 \
-  --file /tmp/sample-logs.txt \
-  --s3-bucket $(terraform output -raw s3_bucket_name) \
-  --s3-key "logs/sample-logs.txt"
+# Check S3 bucket for metric logs (saved every 2 hours by SRE Agent)
+S3_BUCKET=$(terraform output -raw s3_bucket_name)
+aws s3 ls "s3://${S3_BUCKET}/metrics/" --recursive
 
-cat /tmp/sample-logs.txt | head -20
+# Download and review recent metrics
+aws s3 cp "s3://${S3_BUCKET}/metrics/latest-metrics.json" /tmp/metrics.json
+cat /tmp/metrics.json | jq '.'
+
+# Expected format with percentages:
+# {
+#   "timestamp": "2024-01-15T10:00:00Z",
+#   "metrics": {
+#     "cpu_percent": 85.5,
+#     "memory_percent": 72.3,
+#     "disk_percent": 45.2
+#   },
+#   "instance_id": "i-0123456789abcdef0"
+# }
 ```
 
-### Step 5.3: Test Chatbot
+### Step 5.4: Test AI Chatbot with API Gateway
 
 ```bash
-# Option 1: Local testing
-bash scripts/test-ai-chat.sh --local
+# Test 1: Query infrastructure metrics
+curl -X POST https://${API_GATEWAY_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "Analyze current infrastructure metrics",
+    "include_metrics": true
+  }' | jq '.' > /tmp/api-response.json
 
-# Option 2: AWS Lambda testing
-export LAMBDA_FUNCTION_NAME="sre-automation-ai-chatbot"
-bash scripts/test-ai-chat.sh
+cat /tmp/api-response.json
 
-# Option 3: Direct invocation
-aws lambda invoke \
+# Test 2: Query specific error metrics
+curl -X POST https://${API_GATEWAY_ID}.execute-api.${AWS_REGION}.amazonaws.com/prod/chat \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What errors did we have in the last 2 hours?"
+  }' | jq '.message'
+
+# Expected response includes metrics extraction:
+# "Based on the latest metrics (CPU: 85%, Memory: 72%, Disk: 45%), 
+#  no critical errors detected. System performing normally."
+```
+
+### Step 5.5: Verify Lambda Execution
+
+```bash
+# Check AI Chatbot Lambda function
+aws lambda get-function-concurrency \
   --function-name "sre-automation-ai-chatbot" \
-  --payload '{
-    "query": "What errors occurred in the last 1 hour?",
-    "log_source": "cloudwatch",
-    "log_group": "/aws/ec2/sre-automation",
-    "time_range_hours": 1
-  }' \
-  /tmp/chatbot-response.json
+  --query 'ReservedConcurrentExecutions'
 
-jq '.' /tmp/chatbot-response.json
+# Monitor CloudWatch logs for chatbot
+aws logs tail /aws/lambda/sre-automation-ai-chatbot --follow
 ```
 
 ## Monitoring & Validation

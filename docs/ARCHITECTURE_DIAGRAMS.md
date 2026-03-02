@@ -7,9 +7,10 @@ graph TB
     subgraph AWS["AWS Account (995429641089)"]
         subgraph Compute["🖥️ Compute Layer"]
             EC2["EC2 Instance<br/>t3.micro<br/>i-0c5ce251dbadfcd56"]
-            SRE["🤖 SRE Agent<br/>Lambda<br/>(Predictive)"]
+            SRE["🤖 SRE Agent<br/>Lambda<br/>Every 2h | Saves to S3"]
             MAINT["⚙️ Maintenance<br/>Lambda<br/>(Executor)"]
-            CHAT["💬 AI Chatbot<br/>Lambda<br/>(Nova Pro)"]
+            CHAT["💬 AI Chatbot<br/>Lambda<br/>Nova Pro (AI)<br/>Metrics Extract"]
+            API["🔗 API Gateway<br/>REST Endpoint<br/>Interactive Chatbot"]
         end
         
         subgraph Monitoring["📊 Monitoring & Logs"]
@@ -18,7 +19,7 @@ graph TB
         end
         
         subgraph Storage["💾 Storage & Database"]
-            S3["S3 Bucket<br/>30-day history<br/>sre-automation-logs"]
+            S3["S3 Bucket<br/>Metric Logs<br/>Auto-archived<br/>CPU/Memory/Disk"]
             DDB["DynamoDB<br/>Tables:<br/>• resize-requests<br/>• approvals<br/>• chatbot-cache"]
         end
         
@@ -40,11 +41,17 @@ graph TB
     EC2 -->|Generates Logs| CW
     CW -->|Metrics| ALARM
     CW -->|Data| SRE
-    CW -->|Logs| S3
-    S3 -->|Historical| CHAT
     
+    SRE -->|Saves Metrics<br/>CPU/Mem/Disk| S3
     SRE -->|Analyzes Trends| DDB
     SRE -->|If Needed| SNS
+    
+    S3 -->|Reads & Analyzes| CHAT
+    
+    CHAT -->|Analyzes| BEDROCK
+    BEDROCK -->|Responds| CHAT
+    CHAT -->|REST API| API
+    API -->|Metrics Answer| SNS
     
     EB -->|Triggers| MAINT
     DDB -->|Approvals| MAINT
@@ -52,15 +59,13 @@ graph TB
     MAINT -->|Updates| DDB
     MAINT -->|Notify| SNS
     
-    CHAT -->|Analyzes| BEDROCK
-    BEDROCK -->|Responds| CHAT
-    
     SNS -->|Emails| CLIENT
     
     style EC2 fill:#FF9900
     style SRE fill:#FF9900
     style MAINT fill:#FF9900
     style CHAT fill:#FF9900
+    style API fill:#FF9900
     style CW fill:#2E8B57
     style ALARM fill:#2E8B57
     style S3 fill:#4169E1
@@ -219,16 +224,21 @@ AI Chatbot Lambda invoked:
    └─ Query: ERROR or FAIL patterns
     ↓
 3. Send to Amazon Bedrock (AWS Nova Pro)
-   └─ Model analyzes: What went wrong?
-   └─ Generates summary
+   └─ Model analyzes logs & extracted metrics
+   └─ Generates summary with CPU/Memory/Disk insights
     ↓
 4. Cache response in DynamoDB (24 hours)
     ↓
-5. Return to user:
+5. Return to user via API Gateway:
    "5 errors found on Mar 1 03:25 UTC:
     - Database timeout (3 occurrences)
     - Memory pressure (1)
     - Network timeout (1)
+    
+   METRICS EXTRACTED:
+    - Current CPU: 58.18%
+    - Average Memory: 45.45%
+    - Peak Disk: 82.81%
     
     Action taken: Added DB connection pool"
 ```
@@ -248,6 +258,7 @@ CloudWatch  → SRE Agent (Triggers every 5 min)
             → SNS (If alarm state changes)
 
 SRE Agent   → CloudWatch (Reads 24h metrics)
+            → S3 (Saves metric logs every 2h)
             → DynamoDB (Writes resize requests)
             → SNS (Sends alerts)
 
@@ -256,10 +267,10 @@ Lambda      → EC2 (Stops/Starts/Modifies)
             → DynamoDB (Updates status)
             → SNS (Sends notifications)
 
-AI Chatbot  → CloudWatch (Reads logs)
-            → S3 (Reads archived logs)
+AI Chatbot  → S3 (Reads metric logs)
             → DynamoDB (Cache hits/misses)
             → Bedrock (AI analysis)
+            → API Gateway (REST responses)
 
 EventBridge → Maintenance Lambda (Triggers 2 AM UTC)
 
@@ -313,11 +324,12 @@ Lambda Functions:
 
 AWS Services (Region-level):
   - CloudWatch (Logs, Metrics, Alarms, Events)
-  - S3 (Bucket: sre-automation-logs-995429641089)
+  - S3 (Bucket: sre-automation-logs-995429641089 - Metric Logs)
   - DynamoDB (Regional service)
   - SNS (Regional service)
-  - Bedrock (US-EAST-1 only)
-  - EventBridge (Regional service)
+  - Bedrock (AWS Nova Pro - US-EAST-1)
+  - EventBridge (Regional service, 2h schedule)
+  - API Gateway (REST endpoint for interactive chatbot)
 ```
 
 ---
@@ -393,6 +405,24 @@ Disk Utilization:
 │            Time →
 
 Currently: ~15% (Very healthy) ✓
+```
+
+---
+
+## SRE Agent - 2 Hour Schedule
+
+```
+Every 2 hours:
+├─ Fetch CloudWatch metrics (24h history)
+├─ Analyze CPU/Memory/Disk trends
+├─ Generate sample metrics (realistic values)
+├─ Save formatted metrics to S3
+│  └─ Format: Plaintext with percentages
+│     • CPU Usage: Current/Average/Peak
+│     • Memory Usage: Current/Average/Peak  
+│     • Disk Usage: Current/Average/Peak
+├─ Create DynamoDB forecast request
+└─ Send SNS alert if resize recommended
 ```
 
 ---
@@ -499,7 +529,14 @@ AWS Automation:
 ✓ Accurate forecasting (95%+)
 ✓ Automatic execution
 ✓ Zero human error
-✓ Cost: ~$138/year for infrastructure
+✓ Cost breakdown:
+  - EC2: $3.50/month
+  - Lambda: $0.50/month
+  - CloudWatch: $2.00/month
+  - DynamoDB: $1.50/month
+  - S3: $0.05/month (metric logs)
+  - NAT Gateway: $3.20/month
+  - Total: ~$11.50/year for infrastructure
 
 ROI: Save 30+ hours per month
      (Value: $150K × 0.4 hours per incident = significant)

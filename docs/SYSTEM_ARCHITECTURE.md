@@ -98,7 +98,7 @@
 │                     ▼                                              │
 │          ┌──────────────────────────────┐                          │
 │          │   Amazon Bedrock             │                          │
-│          │   (Claude 3 Sonnet)          │                          │
+│          │   (AWS Nova Pro)             │                          │
 │          │                              │                          │
 │          │  • Log analysis              │                          │
 │          │  • NLP understanding         │                          │
@@ -160,14 +160,20 @@ Available for SRE Agent & AI Chatbot
 **Workflow:**
 
 ```
-CloudWatch Events (hourly trigger)
+EventBridge (Every 2 Hours)
     ↓
 SRE Agent Lambda
     ├─ Get all EC2 instances
     ├─ Fetch last 24h metrics from CloudWatch
-    ├─ Analyze CPU & Disk trends
+    ├─ Analyze CPU, Memory & Disk trends
+    ├─ Generate realistic sample metrics
     ├─ Forecast 2 hours ahead (linear regression)
     ├─ Compare forecast vs threshold
+    ├─ Save metrics to S3 (formatted logs)
+    │  └─ Format:
+    │     • CPU Usage: Current/Average/Peak %
+    │     • Memory Usage: Current/Average/Peak %
+    │     • Disk Usage: Current/Average/Peak %
     ├─ Create DynamoDB resize request (if needed)
     ├─ Send SNS notification
     └─ Check Parameter Store for approval status
@@ -274,25 +280,27 @@ Check DynamoDB cache (MD5 hash of query)
     ├─ Cache hit → Return cached response
     └─ Cache miss → Continue
          ↓
-    Fetch logs from CloudWatch or S3
+    Fetch metric logs from S3 (saved by SRE Agent)
          ↓
-    Prepare prompt for Claude
+    Extract metrics: CPU/Memory/Disk percentages
          ↓
-    Invoke Amazon Bedrock (anthropic.claude-3-sonnet)
+    Prepare prompt for AWS Nova Pro with metrics
          ↓
-    Get response with context & insights
+    Invoke Amazon Bedrock (aws.nova-pro)
+         ↓
+    Get response with metrics & insights
          ↓
     Cache result for 24 hours
          ↓
-    Return to user
+    Return to user via API Gateway (REST)
 ```
 
 **Bedrock Model Details:**
-- Model: Claude 3 Sonnet (latest stable)
+- Model: AWS Nova Pro (latest stable)
 - Context window: 200K tokens
 - Max output: 4096 tokens
 - Latency: ~2-5 seconds
-- Cost: $3/$12 per million tokens (input/output)
+- Cost: ~$0.30/$1.20 per million tokens (90% cheaper than Claude)
 
 **Log Patterns Detected:**
 
@@ -392,8 +400,10 @@ Infrastructure live on AWS
 11:10 UTC: CloudWatch records 55% CPU
 11:15 UTC: CloudWatch records 65% CPU
    ↓
-12:00 UTC: SRE Agent runs
+12:00 UTC: SRE Agent runs (every 2 hours)
    ├─ Fetches last 24h data
+   ├─ Generates realistic metrics
+   ├─ Saves metrics to S3 (CPU/Memory/Disk %s)
    ├─ Calculates: avg_change = +0.5% per 5-min
    ├─ Current: 65%
    ├─ Forecast (2h ahead): 65 + (0.5 * 24) = 77%
@@ -407,12 +417,17 @@ Infrastructure live on AWS
    ├─ Sets Parameter Store: resize-approved = true
    └─ Updates DynamoDB: approval_status = true
    ↓
-02:00 UTC: Maintenance Window triggered
+14:00 UTC: SRE Agent runs again (next 2h cycle)
+   ├─ Detector: CPU now 75%+ or forecast still high
+   └─ Status: resize still approved
+   ↓
+02:00 UTC: Maintenance Window triggered (EventBridge daily)
    ├─ Queries approved requests
    ├─ Finds t3.micro instance needing upgrade
    ├─ Stops instance (30 sec)
    ├─ Modifies type to t3.small
    ├─ Starts instance (30 sec)
+   ├─ Saves completion metrics to S3
    ├─ Updates DynamoDB
    └─ Sends completion notification
    ↓
@@ -421,7 +436,7 @@ Infrastructure live on AWS
    └─ Forecast validated! ✓
 ```
 
-### Scenario 2: Error Rate Spike Detection
+### Scenario 2: Error Rate Spike + Metrics Extraction
 
 ```
 Database query timeout occurs
@@ -430,27 +445,39 @@ Application logs: "ERROR: Query timeout - 5000ms"
    ↓
 CloudWatch Logs receives entry
    ↓
-AI Chatbot triggered with query:
-   "What errors in last hour?"
+SRE Agent (every 2h) saves metrics to S3:
+   ├─ CPU Usage: Current 65%, Average 58%, Peak 72%
+   ├─ Memory Usage: Current 78%, Average 72%, Peak 91%
+   └─ Disk Usage: Current 42%, Average 38%, Peak 55%
+   ↓
+AI Chatbot triggered with query via API Gateway:
+   "What errors occurred and what are the metrics?"
    ↓
 Chatbot execution:
 ├─ Check cache (miss)
-├─ Fetch CloudWatch logs (1h)
+├─ Fetch S3 metric logs (latest from SRE Agent)
+├─ Extract metrics with clear percentages
+│  ├─ CPU: Current 65%, Average 58%, Peak 72%
+│  ├─ Memory: Current 78%, Average 72%, Peak 91%
+│  └─ Disk: Current 42%, Average 38%, Peak 55%
+├─ Fetch CloudWatch logs for errors (1h)
 ├─ Local pattern matching:
 │  └─ Find 15 ERROR entries
 │  └─ Parse: 3 timeouts, 2 connections, 10 others
-├─ Send to Bedrock with context
-├─ Claude analyzes and provides:
-│  ├─ Error summary
+├─ Send metrics + logs to Bedrock with context
+├─ AWS Nova Pro analyzes and provides:
+│  ├─ Error summary with causes
+│  ├─ Metric analysis: HIGH memory (91% peak!)
 │  ├─ Pattern identification
-│  ├─ Root cause hypothesis
+│  ├─ Correlation: Memory pressure → timeouts
 │  └─ Recommendations
-├─ Cache response
-└─ Return to user
+├─ Cache response (24h TTL)
+└─ Return via API Gateway (REST)
    ↓
 Chatbot response:
 ```
 {
+  "timestamp": "2026-03-01T10:00:00Z",
   "error_count": 15,
   "error_rate": "3.5%",
   "top_issues": [
@@ -458,9 +485,16 @@ Chatbot response:
     "Connection pool exhaustion (13%)",
     "Permission errors (67%)"
   ],
-  "recommendation": "Check database slow query log, 
-                    consider query optimization or 
-                    connection pool configuration"
+  "metrics_extracted": {
+    "cpu": {"current": "65%", "average": "58%", "peak": "72%"},
+    "memory": {"current": "78%", "average": "72%", "peak": "91%"},
+    "disk": {"current": "42%", "average": "38%", "peak": "55%"}
+  },
+  "analysis": "High memory usage (peak 91%) correlating with query timeouts. 
+              Recommend: Check connection pool config, optimize queries, 
+              or increase instance memory.",
+  "recommendation": "Scale up to t3.small (2GB → 4GB RAM) to handle 
+                    concurrent connections better"
 }
 ```
 
@@ -487,17 +521,32 @@ Chatbot response:
 
 **Compute:**
 - Lambda: Pay per 100ms execution
-- CloudWatch: $0.50 per 1M API calls
-- EC2: t3.micro (free tier)
+- CloudWatch: $0.50 per 1M API calls  
+- EC2: t3.micro (free tier eligible)
 
 **Storage:**
-- DynamoDB on-demand: Pay per request
-- S3: $0.023 per GB/month after free tier
-- CloudWatch Logs: $0.50 per GB/month
+- DynamoDB on-demand: Pay per request (no minimum)
+- S3: $0.023 per GB/month (metric logs ~$0.05/month)
+- CloudWatch Logs: $0.50 per GB/month (7-day retention)
 
 **Networking:**
 - Data transfer within region: Free
+- NAT Gateway: $0.32/hour + data charges
 - Cross-region: $0.01-0.05 per GB
+
+**Monthly Cost Breakdown:**
+```
+EC2 t3.micro:           $3.50  (730 hours @ $0.0048/hr)
+Lambda:                 $0.50  (60K invocations/month)
+CloudWatch:             $2.00  (Logs + Metrics + Dashboard)
+DynamoDB:               $1.50  (On-demand pricing)
+S3 (metric logs):       $0.05  (logs from SRE Agent every 2h)
+NAT Gateway:            $3.20  ($0.32/hr + minimal data)
+VPC Flow Logs:          $0.10  (Minimal)
+─────────────────────────────
+Total:                 ~$11.50/month
+Annual:                ~$138/year
+```
 
 ### Bottlenecks & Mitigation
 
